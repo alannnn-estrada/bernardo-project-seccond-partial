@@ -229,23 +229,39 @@ class RecordDialog(QDialog):
 
         title = f"{'Editar' if record else 'Nuevo'} {table_name}"
         self.setWindowTitle(title)
-        self.setGeometry(0, 0, 500, 600)
+        
+        field_count = len(FORM_FIELDS.get(self.table_name, []))
+        calculated_height = min(850, 150 + field_count * 90)
+        self.resize(550, calculated_height)
         self.setup_ui()
 
     def setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(12)
-        layout.setContentsMargins(16, 16, 16, 16)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        
+        main_card = QFrame()
+        main_card.setObjectName("dialogCard")
+        layout = QVBoxLayout(main_card)
+        layout.setSpacing(16)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         # Scroll area para formulario
         scroll = QScrollArea()
-        scroll.setObjectName("dialogScroll")
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("background: transparent;")
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
+        field_count = len(FORM_FIELDS.get(self.table_name, []))
+        if field_count <= 8:
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
         scroll_widget = QWidget()
-        scroll_widget.setObjectName("dialogCard")
+        scroll_widget.setStyleSheet("background: transparent;")
+        
         form_layout = QVBoxLayout(scroll_widget)
         form_layout.setSpacing(12)
-        form_layout.setContentsMargins(18, 18, 18, 18)
+        form_layout.setContentsMargins(0, 0, 0, 0)
 
         self.fields = {}
         field_list = FORM_FIELDS.get(self.table_name, [])
@@ -350,6 +366,7 @@ class RecordDialog(QDialog):
         button_layout.addWidget(save_btn)
 
         layout.addLayout(button_layout)
+        main_layout.addWidget(main_card)
 
     def update_username_preview(self):
         """Actualiza preview de usuario generado automáticamente"""
@@ -589,8 +606,9 @@ class TablePanel(QWidget):
             record = dialog.result
 
             # Asignar ID y campos auto
-            if "id_" + self.table_name.rstrip("s") not in record or not record["id_" + self.table_name.rstrip("s")]:
-                record["id_" + self.table_name.rstrip("s")] = generate_id("id_" + self.table_name.rstrip("s"))
+            id_field = TABLES[self.table_name].get("id_field", "")
+            if id_field and (id_field not in record or not record[id_field]):
+                record[id_field] = generate_id(id_field)
 
             # Auto-assign usuario y terminal para reservaciones si siguen vacíos
             if self.table_name == "reservaciones":
@@ -765,18 +783,44 @@ class TablePanel(QWidget):
         client_id = row.get("id_cliente")
         dialog = QDialog(self)
         dialog.setWindowTitle(f"Reservaciones - {row.get('nombre', '')} {row.get('apellido', '')}")
-        dialog.setMinimumSize(800, 400)
+        dialog.setMinimumSize(800, 500)
+        
         layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(16, 16, 16, 16)
+        
+        card = QFrame()
+        card.setObjectName("dialogCard")
+        card_layout = QVBoxLayout(card)
+        
+        title = QLabel(f"Reservaciones de {row.get('nombre', '')}")
+        title.setObjectName("dialogTitle")
+        card_layout.addWidget(title)
+        
+        # Search layout
+        search_layout = QHBoxLayout()
+        search_label = QLabel("Buscar:")
+        search_label.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        search_layout.addWidget(search_label)
+        
+        search_input = QLineEdit()
+        search_input.setPlaceholderText("Filtrar reservación...")
+        search_input.setObjectName("searchInput")
+        search_layout.addWidget(search_input)
+        card_layout.addLayout(search_layout)
         
         table = QTableWidget()
         headers = ["Viaje", "Fecha", "Asientos", "Total", "Estado"]
         table.setColumnCount(len(headers))
         table.setHorizontalHeaderLabels(headers)
         table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        table.setAlternatingRowColors(True)
+        table.setSortingEnabled(True)
         
         res_rows = load_rows("reservaciones")
         client_res = [r for r in res_rows if r.get("id_cliente") == client_id]
         
+        table.setSortingEnabled(False)
         table.setRowCount(len(client_res))
         for r_idx, r in enumerate(client_res):
             viaje = get_display_value("viajes", r.get("id_viaje", ""))
@@ -785,8 +829,29 @@ class TablePanel(QWidget):
             table.setItem(r_idx, 2, QTableWidgetItem(str(r.get("asientos", ""))))
             table.setItem(r_idx, 3, QTableWidgetItem(f"${r.get('costo_total', '0')}"))
             table.setItem(r_idx, 4, QTableWidgetItem(r.get("estado", "")))
+        table.setSortingEnabled(True)
             
-        layout.addWidget(table)
+        def filter_res(text):
+            query = text.lower().strip()
+            for r in range(table.rowCount()):
+                match = False
+                for c in range(table.columnCount()):
+                    item = table.item(r, c)
+                    if item and query in item.text().lower():
+                        match = True
+                        break
+                table.setRowHidden(r, not match)
+                
+        search_input.textChanged.connect(filter_res)
+            
+        card_layout.addWidget(table)
+        
+        close_btn = QPushButton("Cerrar")
+        close_btn.setObjectName("primaryAction")
+        close_btn.clicked.connect(dialog.accept)
+        card_layout.addWidget(close_btn)
+        
+        layout.addWidget(card)
         dialog.exec()
 
 

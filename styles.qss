@@ -86,19 +86,12 @@ QDateEdit:disabled {
     border: 1px solid #1e293b;
 }
 
-QComboBox::drop-down,
-QDateEdit::drop-down {
+QComboBox::drop-down {
     border: none;
     width: 34px;
 }
 
-QComboBox::down-arrow {
-    image: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid #cbd5e1;
-    margin-right: 10px;
-}
+
 
 QComboBox QAbstractItemView {
     background: #1e293b;
@@ -304,6 +297,17 @@ QScrollBar::handle:vertical:hover {
     background: #64748b;
 }
 
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    background: none;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
 QScrollBar:horizontal {
     border: none;
     background: transparent;
@@ -320,6 +324,17 @@ QScrollBar::handle:horizontal {
 
 QScrollBar::handle:horizontal:hover {
     background: #64748b;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0px;
+    background: none;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
 }
 
 QScrollBar::add-line:vertical,
