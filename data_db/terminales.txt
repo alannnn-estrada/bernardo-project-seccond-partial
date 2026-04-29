@@ -1,0 +1,1 @@
+id_terminal=id_terminal_8af51537,nombre_terminal=Terminal Central,direccion=Sin direccion,codigo_postal=56530

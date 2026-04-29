@@ -1,0 +1,3 @@
+id_rol=rol_admin,nombre_rol=Administrador,permisos=roles,clientes,terminales,lugares,viajes,usuarios,reservaciones
+id_rol=rol_recep,nombre_rol=Recepcionista,permisos=clientes,reservaciones,viajes,lugares
+id_rol=rol_coord,nombre_rol=Coordinador,permisos=viajes,lugares,terminales

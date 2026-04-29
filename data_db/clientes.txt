@@ -1,0 +1,1 @@
+id_cliente=id_cliente_614223fd,nombre=Alan,apellido=Estrada,correo=alanestrada@gmail.com,telefono=1234567890
