@@ -1,5 +1,7 @@
+import csv
 from datetime import datetime
 import hashlib
+import io
 import os
 import uuid
 
@@ -402,16 +404,30 @@ def release_trip_seats(trip_id, seats):
 
 def parse_line(line):
     row = {}
-    parts = [part.strip() for part in line.strip().split(",") if part.strip()]
+    parts = next(csv.reader([line.strip()], skipinitialspace=True), [])
+    current_key = None
     for part in parts:
-        if "=" in part:
-            key, value = part.split("=", 1)
-            row[key.strip()] = value.strip()
+        chunk = part.strip()
+        if not chunk:
+            continue
+
+        if "=" in chunk:
+            key, value = chunk.split("=", 1)
+            current_key = key.strip()
+            row[current_key] = value.strip()
+            continue
+
+        # Soporta valores legados con comas sin comillas (ej. permisos=roles,clientes,...).
+        if current_key:
+            row[current_key] = f"{row[current_key]},{chunk}"
     return row
 
 
 def serialize_row(row, fields):
-    return ",".join(f"{field}={row.get(field, '')}" for field in fields)
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="")
+    writer.writerow([f"{field}={row.get(field, '')}" for field in fields])
+    return buffer.getvalue()
 
 
 def load_rows(table_name):

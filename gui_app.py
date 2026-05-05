@@ -381,15 +381,15 @@ class AgencyGUI(QMainWindow):
         from insert import get_row
         id_rol = self.current_user.get("id_rol", "").strip()
         if not id_rol:
-            return TABLE_NAMES
+            return []
 
         rol = get_row("roles", id_rol)
         if not rol:
-            return TABLE_NAMES
+            return []
 
         permisos = rol.get("permisos", "").strip()
         if not permisos:
-            return TABLE_NAMES
+            return []
 
         allowed = {name.strip() for name in permisos.split(",") if name.strip()}
         return [table_name for table_name in TABLE_NAMES if table_name in allowed]

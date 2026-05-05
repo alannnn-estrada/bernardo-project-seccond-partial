@@ -1,20 +1,9 @@
 import os
 
-from insert import TABLES, ensure_data_files, load_rows
+from insert import TABLES, ensure_data_files, parse_line
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data_db")
-
-
-def parse_line(line):
-    row = {}
-    parts = [part.strip() for part in line.strip().split(",") if part.strip()]
-    for part in parts:
-        if "=" in part:
-            key, value = part.split("=", 1)
-            row[key.strip()] = value.strip()
-    return row
-
 
 def load_rows(path):
     rows = []

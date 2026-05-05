@@ -50,6 +50,7 @@ FORM_FIELDS = {
         ("costo_asiento", "number"),
     ],
     "usuarios": [
+        ("username", "username_auto"),
         ("password_hash", "password"),
         ("id_rol", "select"),
         ("id_terminal", "select"),

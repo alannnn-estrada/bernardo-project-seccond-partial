@@ -34,7 +34,6 @@ from ui_config import (
     REFERENCE_TABLES,
     STATE_OPTIONS,
     TREE_HEADERS,
-    build_username_base,
     generate_unique_username,
     is_valid_number,
     is_trip_outdated,
@@ -346,6 +345,15 @@ class RecordDialog(QDialog):
             self.fields[field_name] = (input_widget, field_type)
             form_layout.addWidget(input_widget)
 
+        if self.table_name == "usuarios" and not self.record:
+            nombre_widget = self.fields.get("nombre", (None, None))[0]
+            apellido_widget = self.fields.get("apellido", (None, None))[0]
+            if nombre_widget:
+                nombre_widget.textChanged.connect(self.update_username_preview)
+            if apellido_widget:
+                apellido_widget.textChanged.connect(self.update_username_preview)
+            self.update_username_preview()
+
         scroll.setWidget(scroll_widget)
         layout.addWidget(scroll)
 
@@ -379,10 +387,8 @@ class RecordDialog(QDialog):
         if nombre_widget and apellido_widget and username_widget:
             nombre = nombre_widget.text().strip()
             apellido = apellido_widget.text().strip()
-            if nombre or apellido:
-                base = build_username_base(nombre, apellido)
-                unique = generate_unique_username(nombre, apellido, self.record.get("id_usuario", ""))
-                username_widget.setText(unique)
+            unique = generate_unique_username(nombre, apellido, self.record.get("id_usuario", ""))
+            username_widget.setText(unique)
 
     def save_record(self):
         record = {}
@@ -397,7 +403,7 @@ class RecordDialog(QDialog):
                 # Obtener ID del objeto seleccionado
                 ref_table = REFERENCE_TABLES.get(field_name, "")
                 if ref_table:
-                    id_field = f"id_{ref_table.rstrip('s')}"
+                    id_field = TABLES[ref_table]["id_field"]
                     record[field_name] = data.get(id_field, "")
 
             elif field_type == "password":
@@ -667,10 +673,10 @@ class TablePanel(QWidget):
             dialog = RecordDialog(self, self.gui_app, self.table_name, record)
             if dialog.exec() == QDialog.DialogCode.Accepted and dialog.result:
                 updated = dialog.result
-                # Mantener ID
-                for key in record:
-                    if key.startswith("id_"):
-                        updated[key] = record[key]
+                # Mantener solo la PK de la tabla editada.
+                id_field = TABLES[self.table_name].get("id_field", "")
+                if id_field and id_field in record:
+                    updated[id_field] = record[id_field]
 
                 if not validate_foreign_keys(self.table_name, updated):
                     QMessageBox.warning(self, "Validación", "Revise las relaciones seleccionadas.")
@@ -758,7 +764,8 @@ class TablePanel(QWidget):
         if self.table_name == "reservaciones":
             seats = int(float(row.get("asientos", "0") or 0))
             if not release_trip_seats(row.get("id_viaje", ""), seats):
-                QMessageBox.warning(self, "Validación", "No se pudieron liberar los cupos del viaje, pero se eliminará el registro para evitar bloqueo por datos inconsistentes.")
+                QMessageBox.warning(self, "Validación", "No se pudieron liberar los cupos del viaje. No se eliminará la reservación para mantener consistencia.")
+                return
 
         id_field = TABLES[self.table_name]["id_field"]
         target_id = row.get(id_field, "")

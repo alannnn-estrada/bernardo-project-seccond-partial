@@ -6,6 +6,7 @@ config:
     theme: default
 ---
 erDiagram
+    ROLES ||--o{ USUARIOS : autoriza
     CLIENTES ||--o{ RESERVACIONES : realiza
     USUARIOS ||--o{ RESERVACIONES : registra
     TERMINALES ||--o{ USUARIOS : asigna
@@ -22,10 +23,17 @@ erDiagram
         string telefono
     }
 
+    ROLES {
+        string id_rol PK
+        string nombre_rol
+        string permisos
+    }
+
     USUARIOS {
         string id_usuario PK
         string username UK
         string password_hash
+        string id_rol FK
         string id_terminal FK
         date fecha_contratacion
         string nombre
@@ -33,6 +41,7 @@ erDiagram
         string direccion
         string correo
         string numero
+        string curp
         string rfc
         string sueldo
     }
@@ -60,6 +69,7 @@ erDiagram
         int cupos_totales
         int cupos_disponibles
         string horario
+        float costo_asiento
     }
 
     RESERVACIONES {
@@ -71,4 +81,5 @@ erDiagram
         date fecha_reservacion
         int asientos
         string estado
+        float costo_total
     }

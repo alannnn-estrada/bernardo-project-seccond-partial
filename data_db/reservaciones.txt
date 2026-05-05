@@ -1,1 +1,1 @@
-id_reservacion=,id_cliente=id_cliente_614223fd,id_viaje=id_viaje_9c6412e2,id_usuario=id_usuario_b540023a,id_terminal=id_terminal_8af51537,fecha_reservacion=2026-04-29,asientos=5,estado=confirmada,costo_total=150.00
+id_reservacion=id_reservacion_5f0f3a1c,id_cliente=id_cliente_614223fd,id_viaje=id_viaje_9c6412e2,id_usuario=id_usuario_b540023a,id_terminal=id_terminal_8af51537,fecha_reservacion=2026-04-29,asientos=5,estado=confirmada,costo_total=150.00
