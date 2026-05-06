@@ -9,142 +9,116 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data_db")
 
 TABLES = {
-    "roles": {
-        "file": "roles.txt",
-        "id_field": "id_rol",
-        "fields": ["id_rol", "nombre_rol", "permisos"],
-    },
     "clientes": {
         "file": "clientes.txt",
         "id_field": "id_cliente",
-        "fields": ["id_cliente", "nombre", "apellido", "correo", "telefono"],
+        "fields": ["id_cliente", "nombre_completo", "telefono", "email"],
     },
-    "terminales": {
-        "file": "terminales.txt",
-        "id_field": "id_terminal",
-        "fields": ["id_terminal", "nombre_terminal", "direccion", "codigo_postal"],
+    "autobuses": {
+        "file": "autobuses.txt",
+        "id_field": "id_autobus",
+        "fields": ["id_autobus", "numero_unidad", "modelo", "capacidad_total", "placa"],
     },
-    "lugares": {
-        "file": "lugares.txt",
-        "id_field": "id_lugar",
-        "fields": ["id_lugar", "nombre_lugar", "codigo_postal"],
+    "rutas": {
+        "file": "rutas.txt",
+        "id_field": "id_ruta",
+        "fields": ["id_ruta", "origen", "destino", "distancia_estimada"],
     },
     "viajes": {
         "file": "viajes.txt",
         "id_field": "id_viaje",
+        "fields": ["id_viaje", "id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base"],
+    },
+    "boletos": {
+        "file": "boletos.txt",
+        "id_field": "id_boleto",
+        "fields": ["id_boleto", "id_viaje", "id_cliente", "numero_asiento", "costo_final"],
+    },
+    "empleados": {
+        "file": "empleados.txt",
+        "id_field": "id_empleado",
+        "fields": ["id_empleado", "nombre", "rol", "usuario", "contrasena_encriptada"],
+    },
+    "accesos": {
+        "file": "accesos.txt",
+        "id_field": "id_acceso",
         "fields": [
-            "id_viaje",
-            "id_lugar_origen",
-            "id_lugar_destino",
-            "fecha",
-            "km_recorrer",
-            "tiempo_estimado_llegada",
-            "cupos_totales",
-            "cupos_disponibles",
-            "horario",
-            "costo_asiento",
+            "id_acceso",
+            "id_empleado",
+            "permiso_altas",
+            "permiso_bajas",
+            "permiso_modificaciones",
+            "interfaz_accedida",
         ],
     },
-    "usuarios": {
-        "file": "usuarios.txt",
-        "id_field": "id_usuario",
-        "fields": [
-            "id_usuario",
-            "username",
-            "password_hash",
-            "id_rol",
-            "id_terminal",
-            "fecha_contratacion",
-            "nombre",
-            "apellido",
-            "direccion",
-            "correo",
-            "numero",
-            "curp",
-            "rfc",
-            "sueldo",
-        ],
-    },
-    "reservaciones": {
-        "file": "reservaciones.txt",
-        "id_field": "id_reservacion",
-        "fields": [
-            "id_reservacion",
-            "id_cliente",
-            "id_viaje",
-            "id_usuario",
-            "id_terminal",
-            "fecha_reservacion",
-            "asientos",
-            "estado",
-            "costo_total",
-        ],
+    "reportes": {
+        "file": "reportes.txt",
+        "id_field": "id_reporte",
+        "fields": ["id_reporte", "id_viaje", "descripcion_incidencia", "fecha_reporte"],
     },
 }
 
 FIELD_LABELS = {
     "id_cliente": "ID cliente",
-    "id_lugar": "ID lugar",
-    "id_terminal": "ID terminal",
+    "id_autobus": "ID autobús",
+    "id_ruta": "ID ruta",
     "id_viaje": "ID viaje",
-    "id_reservacion": "ID reservacion",
-    "id_usuario": "ID usuario",
-    "username": "Username",
-    "password_hash": "Contrasena",
-    "nombre": "Nombre",
-    "apellido": "Apellido",
-    "correo": "Correo",
+    "id_boleto": "ID boleto",
+    "id_empleado": "ID empleado",
+    "id_acceso": "ID acceso",
+    "id_reporte": "ID reporte",
+    "nombre_completo": "Nombre completo",
     "telefono": "Telefono",
-    "nombre_lugar": "Nombre del lugar",
-    "codigo_postal": "Codigo postal",
-    "id_lugar_origen": "ID lugar origen",
-    "id_lugar_destino": "ID lugar destino",
-    "fecha": "Fecha (YYYY-MM-DD)",
-    "km_recorrer": "Km a recorrer",
-    "tiempo_estimado_llegada": "Tiempo estimado de llegada",
-    "cupos_totales": "Cupos totales",
-    "cupos_disponibles": "Cupos disponibles",
-    "horario": "Horario",
-    "fecha_contratacion": "Fecha de contratacion (YYYY-MM-DD)",
-    "direccion": "Direccion",
-    "numero": "Numero",
-    "curp": "CURP",
-    "rfc": "RFC",
-    "sueldo": "Sueldo",
-    "id_rol": "ID Rol",
-    "nombre_terminal": "Nombre de la terminal",
-    "estado": "Estado",
-    "fecha_reservacion": "Fecha de reservacion (YYYY-MM-DD)",
-    "nombre_rol": "Nombre del rol",
-    "permisos": "Permisos",
-    "costo_asiento": "Costo por Asiento",
-    "costo_total": "Costo Total",
+    "email": "Correo",
+    "telefono": "Telefono",
+    "numero_unidad": "Número de unidad",
+    "modelo": "Modelo",
+    "capacidad_total": "Capacidad total",
+    "placa": "Placa",
+    "origen": "Origen",
+    "destino": "Destino",
+    "distancia_estimada": "Distancia estimada",
+    "fecha_salida": "Fecha de salida (YYYY-MM-DD)",
+    "hora_salida": "Hora de salida",
+    "costo_base": "Costo base",
+    "numero_asiento": "Número de asiento",
+    "costo_final": "Costo final",
+    "nombre": "Nombre",
+    "rol": "Rol",
+    "usuario": "Usuario",
+    "contrasena_encriptada": "Contraseña encriptada",
+    "permiso_altas": "Permiso altas",
+    "permiso_bajas": "Permiso bajas",
+    "permiso_modificaciones": "Permiso modificaciones",
+    "interfaz_accedida": "Interfaz accedida",
+    "descripcion_incidencia": "Descripción incidencia",
+    "fecha_reporte": "Fecha reporte (YYYY-MM-DD)",
 }
 
 
 REFERENCE_MAP = {
     "viajes": [
-        ("id_lugar_origen", "lugares", "id_lugar"),
-        ("id_lugar_destino", "lugares", "id_lugar"),
+        ("id_ruta", "rutas", "id_ruta"),
+        ("id_autobus", "autobuses", "id_autobus"),
     ],
-    "usuarios": [("id_terminal", "terminales", "id_terminal"), ("id_rol", "roles", "id_rol")],
-    "reservaciones": [
+    "boletos": [
         ("id_cliente", "clientes", "id_cliente"),
         ("id_viaje", "viajes", "id_viaje"),
-        ("id_usuario", "usuarios", "id_usuario"),
-        ("id_terminal", "terminales", "id_terminal"),
     ],
+    "accesos": [("id_empleado", "empleados", "id_empleado")],
+    "reportes": [("id_viaje", "viajes", "id_viaje")],
 }
 
 
 DISPLAY_FIELDS = {
-    "roles": ["nombre_rol", "permisos"],
-    "clientes": ["nombre", "apellido", "correo", "telefono"],
-    "terminales": ["nombre_terminal", "direccion", "codigo_postal"],
-    "lugares": ["nombre_lugar", "codigo_postal"],
-    "viajes": ["id_lugar_origen", "id_lugar_destino", "fecha", "horario", "cupos_disponibles", "costo_asiento"],
-    "usuarios": ["username", "id_rol", "id_terminal", "nombre", "apellido", "correo"],
-    "reservaciones": ["id_cliente", "id_viaje", "id_usuario", "id_terminal", "fecha_reservacion", "estado", "costo_total"],
+    "clientes": ["nombre_completo", "telefono", "email"],
+    "autobuses": ["numero_unidad", "modelo", "capacidad_total", "placa"],
+    "rutas": ["origen", "destino", "distancia_estimada"],
+    "viajes": ["id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base"],
+    "boletos": ["id_viaje", "id_cliente", "numero_asiento", "costo_final"],
+    "empleados": ["nombre", "rol", "usuario"],
+    "accesos": ["id_empleado", "permiso_altas", "permiso_bajas", "permiso_modificaciones", "interfaz_accedida"],
+    "reportes": ["id_viaje", "descripcion_incidencia", "fecha_reporte"],
 }
 
 
@@ -156,10 +130,14 @@ def ensure_data_files():
             with open(path, "w", encoding="utf-8"):
                 pass
 
-    seed_roles_if_needed()
-    ensure_default_terminal_exists()
-    ensure_users_have_terminal()
-    migrate_legacy_trip_rows()
+    seed_empleados_if_needed()
+    seed_accesos_if_needed()
+    seed_clientes_if_needed()
+    seed_autobuses_if_needed()
+    seed_rutas_if_needed()
+    seed_viajes_if_needed()
+    seed_boletos_if_needed()
+    seed_reportes_if_needed()
 
 
 def table_path(table_name):
@@ -182,146 +160,265 @@ def get_display_value(table_name, record_id):
     if not row:
         return record_id
 
-    if table_name == "roles":
-        return row.get("nombre_rol", record_id)
     if table_name == "clientes":
-        return f"{row.get('nombre', '')} {row.get('apellido', '')}".strip()
-    if table_name == "terminales":
-        return row.get("nombre_terminal", record_id)
-    if table_name == "lugares":
-        return row.get("nombre_lugar", record_id)
+        return row.get("nombre_completo", record_id)
+    if table_name == "autobuses":
+        return f"Unidad {row.get('numero_unidad', '')} - {row.get('modelo', '')}".strip(" -")
+    if table_name == "rutas":
+        return f"{row.get('origen', '')} -> {row.get('destino', '')}".strip()
     if table_name == "viajes":
-        origen = get_display_value("lugares", row.get("id_lugar_origen", ""))
-        destino = get_display_value("lugares", row.get("id_lugar_destino", ""))
-        fecha = row.get("fecha", "")
-        horario = row.get("horario", "")
+        ruta = get_display_value("rutas", row.get("id_ruta", ""))
+        autobus = get_display_value("autobuses", row.get("id_autobus", ""))
+        fecha = row.get("fecha_salida", "")
+        hora = row.get("hora_salida", "")
         disponibles = get_trip_available_seats(row)
         total = get_trip_total_seats(row)
-        estado = "LLENO" if disponibles <= 0 else f"Disponibles {disponibles}/{total}"
-        return f"{origen} -> {destino} | {fecha} {horario} | {estado}".strip()
-    if table_name == "usuarios":
-        nombre = f"{row.get('nombre', '')} {row.get('apellido', '')}".strip()
-        terminal = get_display_value("terminales", row.get("id_terminal", ""))
-        return f"{nombre} ({terminal})".strip()
-    if table_name == "reservaciones":
+        return f"{ruta} | {autobus} | {fecha} {hora} | {disponibles}/{total} asientos".strip()
+    if table_name == "boletos":
         cliente = get_display_value("clientes", row.get("id_cliente", ""))
         viaje = get_display_value("viajes", row.get("id_viaje", ""))
-        estado = row.get("estado", "")
-        return f"{cliente} | {viaje} | {estado}".strip()
+        asiento = row.get("numero_asiento", "")
+        return f"{cliente} | {viaje} | Asiento {asiento}".strip()
+    if table_name == "empleados":
+        return f"{row.get('nombre', '')} ({row.get('usuario', '')})".strip()
+    if table_name == "accesos":
+        empleado = get_display_value("empleados", row.get("id_empleado", ""))
+        return f"{empleado} | {row.get('interfaz_accedida', '')}".strip()
+    if table_name == "reportes":
+        viaje = get_display_value("viajes", row.get("id_viaje", ""))
+        return f"{viaje} | {row.get('descripcion_incidencia', '')}".strip()
     return record_id
 
 
-def get_default_terminal():
-    terminales = load_rows("terminales")
-    if terminales:
-        return terminales[0]
+def get_default_employee():
+    empleados = load_rows("empleados")
+    if empleados:
+        admin = next((row for row in empleados if row.get("usuario", "").strip().lower() == "admin"), None)
+        return admin or empleados[0]
 
-    default_terminal = {
-        "id_terminal": generate_id("id_terminal"),
-        "nombre_terminal": "Terminal Central",
-        "direccion": "Sin direccion",
-        "codigo_postal": "00000",
+    default_employee = {
+        "id_empleado": generate_id("id_empleado"),
+        "nombre": "Administrador",
+        "rol": "Admin",
+        "usuario": "admin",
+        "contrasena_encriptada": hash_password("admin123"),
     }
-    save_rows("terminales", [default_terminal])
-    return default_terminal
+    save_rows("empleados", [default_employee])
+    return default_employee
 
 
-def ensure_default_terminal_exists():
-    get_default_terminal()
+def get_default_terminal():
+    return get_default_employee()
 
 
-def ensure_users_have_terminal():
-    default_terminal = get_default_terminal()
-    users = load_rows("usuarios")
-    changed = False
-
-    for user in users:
-        if not user.get("id_terminal"):
-            user["id_terminal"] = default_terminal["id_terminal"]
-            changed = True
-
-    if changed:
-        save_rows("usuarios", users)
-
-
-def seed_roles_if_needed():
-    roles = load_rows("roles")
-    if roles:
+def seed_empleados_if_needed():
+    empleados = load_rows("empleados")
+    if empleados:
         return
 
     seed_rows = [
         {
-            "id_rol": "rol_admin",
-            "nombre_rol": "Administrador",
-            "permisos": "roles,clientes,terminales,lugares,viajes,usuarios,reservaciones",
+            "id_empleado": generate_id("id_empleado"),
+            "nombre": "Administrador",
+            "rol": "Admin",
+            "usuario": "admin",
+            "contrasena_encriptada": hash_password("admin123"),
         },
         {
-            "id_rol": "rol_recep",
-            "nombre_rol": "Recepcionista",
-            "permisos": "clientes,reservaciones,viajes,lugares",
-        },
-        {
-            "id_rol": "rol_coord",
-            "nombre_rol": "Coordinador",
-            "permisos": "viajes,lugares,terminales",
+            "id_empleado": generate_id("id_empleado"),
+            "nombre": "Usuario Basico",
+            "rol": "Usuario",
+            "usuario": "usuario",
+            "contrasena_encriptada": hash_password("usuario123"),
         },
     ]
-    save_rows("roles", seed_rows)
+    save_rows("empleados", seed_rows)
 
 
-def seed_terminales_if_needed():
-    terminales = load_rows("terminales")
-    if terminales:
+def seed_accesos_if_needed():
+    accesos = load_rows("accesos")
+    if accesos:
         return
 
+    empleados = load_rows("empleados")
+    if not empleados:
+        return
+
+    admin = next((row for row in empleados if row.get("usuario", "").strip().lower() == "admin"), empleados[0])
+    usuario = next((row for row in empleados if row.get("usuario", "").strip().lower() == "usuario"), None)
     seed_rows = [
         {
-            "id_terminal": generate_id("id_terminal"),
-            "nombre_terminal": "Terminal Norte",
-            "direccion": "Av. Principal 100",
-            "codigo_postal": "64000",
-        },
-        {
-            "id_terminal": generate_id("id_terminal"),
-            "nombre_terminal": "Terminal Sur",
-            "direccion": "Av. Central 200",
-            "codigo_postal": "64100",
-        },
-    ]
-    save_rows("terminales", seed_rows)
-    ensure_users_have_terminal()
-
-
-def seed_reservaciones_if_needed():
-    if load_rows("reservaciones"):
-        return
-
-    clientes = load_rows("clientes")
-    viajes = load_rows("viajes")
-    usuarios = load_rows("usuarios")
-    terminales = load_rows("terminales")
-
-    if not clientes or not viajes or not usuarios or not terminales:
-        return
-
-    default_terminal_id = terminales[0]["id_terminal"]
-    seed_rows = [
-        {
-            "id_reservacion": generate_id("id_reservacion"),
-            "id_cliente": clientes[0]["id_cliente"],
-            "id_viaje": viajes[0]["id_viaje"],
-            "id_usuario": usuarios[0]["id_usuario"],
-            "id_terminal": default_terminal_id,
-            "fecha_reservacion": datetime.now().strftime("%Y-%m-%d"),
-            "asientos": "1",
-            "estado": "confirmada",
+            "id_acceso": generate_id("id_acceso"),
+            "id_empleado": admin["id_empleado"],
+            "permiso_altas": "true",
+            "permiso_bajas": "true",
+            "permiso_modificaciones": "true",
+            "interfaz_accedida": "Admin",
         }
     ]
-    save_rows("reservaciones", seed_rows)
+    if usuario:
+        seed_rows.append(
+            {
+                "id_acceso": generate_id("id_acceso"),
+                "id_empleado": usuario["id_empleado"],
+                "permiso_altas": "true",
+                "permiso_bajas": "false",
+                "permiso_modificaciones": "false",
+                "interfaz_accedida": "Usuario",
+            }
+        )
+    save_rows("accesos", seed_rows)
+
+
+def seed_clientes_if_needed():
+    if load_rows("clientes"):
+        return
+    save_rows(
+        "clientes",
+        [
+            {
+                "id_cliente": generate_id("id_cliente"),
+                "nombre_completo": "Juan Perez",
+                "telefono": "8112345678",
+                "email": "juan@example.com",
+            }
+        ],
+    )
+
+
+def seed_autobuses_if_needed():
+    if load_rows("autobuses"):
+        return
+    save_rows(
+        "autobuses",
+        [
+            {
+                "id_autobus": generate_id("id_autobus"),
+                "numero_unidad": "A-01",
+                "modelo": "Irizar i6",
+                "capacidad_total": "40",
+                "placa": "ABC-123",
+            },
+            {
+                "id_autobus": generate_id("id_autobus"),
+                "numero_unidad": "A-02",
+                "modelo": "Volvo 9700",
+                "capacidad_total": "45",
+                "placa": "XYZ-456",
+            },
+        ],
+    )
+
+
+def seed_rutas_if_needed():
+    if load_rows("rutas"):
+        return
+    save_rows(
+        "rutas",
+        [
+            {
+                "id_ruta": generate_id("id_ruta"),
+                "origen": "Monterrey",
+                "destino": "Saltillo",
+                "distancia_estimada": "85",
+            },
+            {
+                "id_ruta": generate_id("id_ruta"),
+                "origen": "Monterrey",
+                "destino": "Tampico",
+                "distancia_estimada": "500",
+            },
+        ],
+    )
+
+
+def seed_viajes_if_needed():
+    if load_rows("viajes"):
+        return
+    rutas = load_rows("rutas")
+    autobuses = load_rows("autobuses")
+    if not rutas or not autobuses:
+        return
+    save_rows(
+        "viajes",
+        [
+            {
+                "id_viaje": generate_id("id_viaje"),
+                "id_ruta": rutas[0]["id_ruta"],
+                "id_autobus": autobuses[0]["id_autobus"],
+                "fecha_salida": "2026-05-10",
+                "hora_salida": "08:00",
+                "costo_base": "150.00",
+            },
+            {
+                "id_viaje": generate_id("id_viaje"),
+                "id_ruta": rutas[1]["id_ruta"],
+                "id_autobus": autobuses[1]["id_autobus"],
+                "fecha_salida": "2026-05-11",
+                "hora_salida": "15:30",
+                "costo_base": "280.00",
+            },
+        ],
+    )
+
+
+def seed_boletos_if_needed():
+    if load_rows("boletos"):
+        return
+    clientes = load_rows("clientes")
+    viajes = load_rows("viajes")
+    if not clientes or not viajes:
+        return
+    save_rows(
+        "boletos",
+        [
+            {
+                "id_boleto": generate_id("id_boleto"),
+                "id_viaje": viajes[0]["id_viaje"],
+                "id_cliente": clientes[0]["id_cliente"],
+                "numero_asiento": "1",
+                "costo_final": viajes[0].get("costo_base", "0"),
+            }
+        ],
+    )
+
+
+def seed_reportes_if_needed():
+    if load_rows("reportes"):
+        return
+    viajes = load_rows("viajes")
+    if not viajes:
+        return
+    save_rows(
+        "reportes",
+        [
+            {
+                "id_reporte": generate_id("id_reporte"),
+                "id_viaje": viajes[0]["id_viaje"],
+                "descripcion_incidencia": "Sin incidentes",
+                "fecha_reporte": datetime.now().strftime("%Y-%m-%d"),
+            }
+        ],
+    )
+
+
+seed_terminales_if_needed = seed_autobuses_if_needed
+seed_reservaciones_if_needed = seed_boletos_if_needed
 
 
 def get_trip_total_seats(row):
-    raw_value = row.get("cupos_totales", row.get("numero_asientos", "0"))
+    if not row:
+        return 0
+
+    if row.get("id_autobus"):
+        autobus = get_row("autobuses", row.get("id_autobus", ""))
+        if autobus:
+            try:
+                return int(float(autobus.get("capacidad_total", "0") or 0))
+            except (TypeError, ValueError):
+                return 0
+
+    raw_value = row.get("capacidad_total", row.get("cupos_totales", row.get("numero_asientos", "0")))
     try:
         return int(float(raw_value))
     except (TypeError, ValueError):
@@ -329,29 +426,30 @@ def get_trip_total_seats(row):
 
 
 def get_trip_available_seats(row):
-    raw_value = row.get("cupos_disponibles", "")
-    if raw_value == "":
-        return get_trip_total_seats(row)
-    try:
-        return int(float(raw_value))
-    except (TypeError, ValueError):
+    total = get_trip_total_seats(row)
+    if total <= 0:
         return 0
+
+    trip_id = row.get("id_viaje", "")
+    if not trip_id:
+        return total
+
+    booked = sum(1 for boleto in load_rows("boletos") if boleto.get("id_viaje", "") == trip_id)
+    return max(0, total - booked)
 
 
 def set_trip_seats(trip_id, delta):
-    trips = load_rows("viajes")
-    for trip in trips:
-        if trip.get("id_viaje") == trip_id:
-            available = get_trip_available_seats(trip)
-            total = get_trip_total_seats(trip)
-            new_available = available + delta
-            if new_available < 0 or new_available > total:
-                return False
-            trip["cupos_totales"] = str(total)
-            trip["cupos_disponibles"] = str(new_available)
-            save_rows("viajes", trips)
-            return True
-    return False
+    trip = get_row("viajes", trip_id)
+    if not trip:
+        return False
+
+    total = get_trip_total_seats(trip)
+    available = get_trip_available_seats(trip)
+    if delta < 0 and available + delta < 0:
+        return False
+    if delta > 0 and available + delta > total:
+        return False
+    return True
 
 
 def trip_is_full(trip_row):
@@ -360,34 +458,16 @@ def trip_is_full(trip_row):
 
 def normalize_trip_row(row):
     normalized = dict(row)
-    total = get_trip_total_seats(normalized)
-    available = get_trip_available_seats(normalized)
-    if total <= 0:
-        total = available if available > 0 else 0
-    if available > total:
-        available = total
-    normalized["cupos_totales"] = str(total)
-    normalized["cupos_disponibles"] = str(available)
-    normalized.pop("id_cliente", None)
-    normalized.pop("numero_asientos", None)
+    normalized.setdefault("id_ruta", "")
+    normalized.setdefault("id_autobus", "")
+    normalized.setdefault("fecha_salida", "")
+    normalized.setdefault("hora_salida", "")
+    normalized.setdefault("costo_base", "0")
     return normalized
 
 
 def migrate_legacy_trip_rows():
-    trips = load_rows("viajes")
-    if not trips:
-        return
-
-    migrated = []
-    changed = False
-    for trip in trips:
-        normalized = normalize_trip_row(trip)
-        if normalized != trip:
-            changed = True
-        migrated.append(normalized)
-
-    if changed:
-        save_rows("viajes", migrated)
+    return
 
 
 def apply_trip_capacity_change(trip_id, seats_delta):
@@ -475,22 +555,24 @@ def verify_password(password, stored_password_hash):
 def choose_table():
     print("\nTablas disponibles:")
     print("1. clientes")
-    print("2. terminales")
-    print("3. lugares")
+    print("2. autobuses")
+    print("3. rutas")
     print("4. viajes")
-    print("5. usuarios")
-    print("6. reservaciones")
-    print("7. roles")
+    print("5. boletos")
+    print("6. empleados")
+    print("7. accesos")
+    print("8. reportes")
 
     option = input("Seleccione tabla: ").strip()
     mapping = {
         "1": "clientes",
-        "2": "terminales",
-        "3": "lugares",
+        "2": "autobuses",
+        "3": "rutas",
         "4": "viajes",
-        "5": "usuarios",
-        "6": "reservaciones",
-        "7": "roles",
+        "5": "boletos",
+        "6": "empleados",
+        "7": "accesos",
+        "8": "reportes",
     }
     return mapping.get(option)
 
@@ -534,15 +616,15 @@ def validate_foreign_keys(table_name, row):
 def validate_unique_username(new_username, current_user_id=None):
     username = new_username.strip().lower()
     if not username:
-        print("El username no puede estar vacio.")
+        print("El usuario no puede estar vacio.")
         return False
 
-    users = load_rows("usuarios")
-    for user in users:
-        existing_username = user.get("username", "").strip().lower()
-        existing_id = user.get("id_usuario", "")
+    empleados = load_rows("empleados")
+    for empleado in empleados:
+        existing_username = empleado.get("usuario", "").strip().lower()
+        existing_id = empleado.get("id_empleado", "")
         if existing_username == username and existing_id != current_user_id:
-            print("Ese username ya existe. Elija otro.")
+            print("Ese usuario ya existe. Elija otro.")
             return False
     return True
 
@@ -559,14 +641,12 @@ def prompt_row(table_name, current_row=None):
     for field in fields:
         if field == id_field:
             continue
-        if table_name == "viajes" and field == "cupos_disponibles":
-            continue
 
         while True:
             label = FIELD_LABELS.get(field, field)
             current_value = row.get(field, "")
 
-            if field == "password_hash":
+            if field == "contrasena_encriptada":
                 if current_row is None:
                     plain_password = input("Contrasena: ").strip()
                     if plain_password == "":
@@ -587,26 +667,13 @@ def prompt_row(table_name, current_row=None):
                     if value == "":
                         value = current_value
 
-            if field in {"km_recorrer", "cupos_totales", "cupos_disponibles", "sueldo", "costo_asiento", "costo_total"} and not validate_number(value, field):
+            if field in {"telefono", "capacidad_total", "distancia_estimada", "costo_base", "numero_asiento", "costo_final"} and not validate_number(value, field):
                 continue
-            if field in {"fecha", "fecha_contratacion"} and not validate_date(value, field):
+            if field in {"fecha_salida", "fecha_reporte"} and not validate_date(value, field):
                 continue
 
             row[field] = value
             break
-
-    if table_name == "viajes":
-        if current_row is None:
-            row["cupos_disponibles"] = row.get("cupos_totales", "0")
-        else:
-            old_total = get_trip_total_seats(current_row)
-            old_available = get_trip_available_seats(current_row)
-            occupied = max(0, old_total - old_available)
-            new_total = get_trip_total_seats(row)
-            if new_total < occupied:
-                print("Los cupos totales no pueden ser menores a las reservaciones ya hechas.")
-                return None
-            row["cupos_disponibles"] = str(new_total - occupied)
 
     return row
 
@@ -621,30 +688,39 @@ def insert_record():
     if new_row is None:
         return
 
-    if table_name == "usuarios" and not validate_unique_username(new_row.get("username", "")):
+    if table_name == "empleados" and not validate_unique_username(new_row.get("usuario", "")):
         return
 
-    if table_name == "viajes" and int(float(new_row.get("cupos_totales", "0") or 0)) <= 0:
-        print("Los cupos totales deben ser mayores a cero.")
+    if table_name == "viajes" and not new_row.get("id_ruta"):
+        print("El viaje requiere una ruta.")
         return
 
-    if table_name == "reservaciones":
+    if table_name == "viajes" and not new_row.get("id_autobus"):
+        print("El viaje requiere un autobus.")
+        return
+
+    if table_name == "boletos":
         trip_id = new_row.get("id_viaje", "")
-        requested_seats = int(float(new_row.get("asientos", "0") or 0))
+        seat_number = new_row.get("numero_asiento", "").strip()
         trip = get_row("viajes", trip_id)
         if not trip:
             print("No existe el viaje seleccionado.")
             return
+        if not seat_number:
+            print("El boleto debe incluir un numero de asiento.")
+            return
+        if any(b.get("id_viaje", "") == trip_id and b.get("numero_asiento", "") == seat_number for b in load_rows("boletos")):
+            print("Ese asiento ya fue asignado para este viaje.")
+            return
         available = get_trip_available_seats(trip)
-        if requested_seats <= 0:
-            print("La reservacion debe incluir al menos 1 asiento.")
+        if available <= 0:
+            print("El viaje esta lleno.")
             return
-        if requested_seats > available:
-            print("El viaje esta lleno o no cuenta con suficientes cupos.")
-            return
+        new_row["costo_final"] = trip.get("costo_base", "0")
 
-    if table_name == "viajes":
-        new_row = normalize_trip_row(new_row)
+    if table_name == "reportes" and not new_row.get("descripcion_incidencia"):
+        print("La descripcion del reporte no puede estar vacia.")
+        return
 
     if not validate_foreign_keys(table_name, new_row):
         return
@@ -652,13 +728,6 @@ def insert_record():
     rows = load_rows(table_name)
     rows.append(new_row)
     save_rows(table_name, rows)
-
-    if table_name == "reservaciones":
-        if not reserve_trip_seats(new_row["id_viaje"], int(float(new_row.get("asientos", "0") or 0))):
-            print("No se pudo actualizar la disponibilidad del viaje.")
-            rows = [row for row in rows if row.get("id_reservacion") != new_row.get("id_reservacion")]
-            save_rows(table_name, rows)
-            return
 
     id_field = TABLES[table_name]["id_field"]
     print(f"Registro agregado en {table_name} con {id_field}: {new_row[id_field]}")
@@ -684,46 +753,38 @@ def update_record():
             if updated_row is None:
                 return
 
-            if table_name == "usuarios":
-                current_user_id = row.get("id_usuario")
-                if not validate_unique_username(updated_row.get("username", ""), current_user_id):
+            if table_name == "empleados":
+                current_user_id = row.get("id_empleado")
+                if not validate_unique_username(updated_row.get("usuario", ""), current_user_id):
                     return
 
-            if table_name == "viajes" and int(float(updated_row.get("cupos_totales", "0") or 0)) <= 0:
-                print("Los cupos totales deben ser mayores a cero.")
+            if table_name == "viajes" and not updated_row.get("id_ruta"):
+                print("El viaje requiere una ruta.")
                 return
 
-            if table_name == "viajes":
-                updated_row = normalize_trip_row(updated_row)
+            if table_name == "viajes" and not updated_row.get("id_autobus"):
+                print("El viaje requiere un autobus.")
+                return
 
-            if table_name == "reservaciones":
-                old_trip_id = original_row.get("id_viaje", "")
-                new_trip_id = updated_row.get("id_viaje", "")
-                old_seats = int(float(original_row.get("asientos", "0") or 0))
-                new_seats = int(float(updated_row.get("asientos", "0") or 0))
-
-                if new_seats <= 0:
-                    print("La reservacion debe incluir al menos 1 asiento.")
+            if table_name == "boletos":
+                trip_id = updated_row.get("id_viaje", "")
+                seat_number = updated_row.get("numero_asiento", "").strip()
+                trip = get_row("viajes", trip_id)
+                if not trip:
+                    print("No existe el viaje seleccionado.")
                     return
-
-                if old_trip_id != new_trip_id:
-                    if not release_trip_seats(old_trip_id, old_seats):
-                        print("No se pudo liberar cupos de la reservacion anterior.")
-                        return
-                    if not reserve_trip_seats(new_trip_id, new_seats):
-                        release_trip_seats(old_trip_id, old_seats)
-                        print("El nuevo viaje no tiene cupos suficientes.")
-                        return
-                else:
-                    diff = new_seats - old_seats
-                    if diff > 0:
-                        if not reserve_trip_seats(new_trip_id, diff):
-                            print("El viaje no tiene cupos suficientes.")
-                            return
-                    elif diff < 0:
-                        if not release_trip_seats(new_trip_id, -diff):
-                            print("No se pudo devolver cupos al viaje.")
-                            return
+                if not seat_number:
+                    print("El boleto debe incluir un numero de asiento.")
+                    return
+                if any(
+                    boleto.get("id_boleto", "") != record_id
+                    and boleto.get("id_viaje", "") == trip_id
+                    and boleto.get("numero_asiento", "") == seat_number
+                    for boleto in load_rows("boletos")
+                ):
+                    print("Ese asiento ya fue asignado para este viaje.")
+                    return
+                updated_row["costo_final"] = trip.get("costo_base", "0")
 
             if not validate_foreign_keys(table_name, updated_row):
                 return
@@ -752,12 +813,6 @@ def delete_record():
     if len(filtered_rows) == len(rows):
         print("No se encontro un registro con ese ID.")
         return
-
-    if table_name == "reservaciones" and target_row:
-        seats = int(float(target_row.get("asientos", "0") or 0))
-        if not release_trip_seats(target_row.get("id_viaje", ""), seats):
-            print("No se pudieron liberar los cupos del viaje.")
-            return
 
     save_rows(table_name, filtered_rows)
     print("Registro eliminado correctamente.")
@@ -796,37 +851,29 @@ def seed_viajes():
         print("La tabla viajes ya tiene datos. Seeder omitido.")
         return
 
-    lugares = load_rows("lugares")
+    rutas = load_rows("rutas")
+    autobuses = load_rows("autobuses")
 
-    if len(lugares) < 2:
-        print("Cargue al menos dos lugares para generar viajes de ejemplo.")
+    if not rutas or not autobuses:
+        print("Cargue rutas y autobuses para generar viajes de ejemplo.")
         return
-
-    origen_id = lugares[0]["id_lugar"]
-    destino_id = lugares[1]["id_lugar"]
 
     seed_rows = [
         {
             "id_viaje": generate_id("id_viaje"),
-            "id_lugar_origen": origen_id,
-            "id_lugar_destino": destino_id,
-            "fecha": "2026-05-01",
-            "km_recorrer": "220",
-            "tiempo_estimado_llegada": "3h 20m",
-            "cupos_totales": "40",
-            "cupos_disponibles": "40",
-            "horario": "08:00",
+            "id_ruta": rutas[0]["id_ruta"],
+            "id_autobus": autobuses[0]["id_autobus"],
+            "fecha_salida": "2026-05-10",
+            "hora_salida": "08:00",
+            "costo_base": "150.00",
         },
         {
             "id_viaje": generate_id("id_viaje"),
-            "id_lugar_origen": destino_id,
-            "id_lugar_destino": origen_id,
-            "fecha": "2026-05-02",
-            "km_recorrer": "220",
-            "tiempo_estimado_llegada": "3h 35m",
-            "cupos_totales": "40",
-            "cupos_disponibles": "40",
-            "horario": "15:30",
+            "id_ruta": rutas[1 % len(rutas)]["id_ruta"],
+            "id_autobus": autobuses[1 % len(autobuses)]["id_autobus"],
+            "fecha_salida": "2026-05-11",
+            "hora_salida": "15:30",
+            "costo_base": "280.00",
         },
     ]
 
@@ -843,7 +890,7 @@ def main():
         print("2. Modificar registro")
         print("3. Eliminar registro")
         print("4. Ver tabla")
-        print("5. Cargar seeders de viajes")
+        print("5. Cargar seeders basicos")
         print("0. Salir")
 
         option = input("Opcion: ").strip()
@@ -857,7 +904,12 @@ def main():
         elif option == "4":
             view_records()
         elif option == "5":
+            seed_clientes_if_needed()
+            seed_autobuses_if_needed()
+            seed_rutas_if_needed()
             seed_viajes()
+            seed_boletos_if_needed()
+            seed_reportes_if_needed()
         elif option == "0":
             print("Saliendo...")
             break

@@ -1,0 +1,2 @@
+id_ruta=id_ruta_e9ef356e,origen=Monterrey,destino=Saltillo,distancia_estimada=85
+id_ruta=id_ruta_60cb991a,origen=Monterrey,destino=Tampico,distancia_estimada=500

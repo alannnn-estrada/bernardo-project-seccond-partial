@@ -1,1 +1,1 @@
-id_cliente=id_cliente_614223fd,nombre=Alan,apellido=Estrada,correo=alanestrada@gmail.com,telefono=1234567890
+id_cliente=id_cliente_b3d16e59,nombre_completo=Juan Perez,telefono=123456789,email=juan@example.com

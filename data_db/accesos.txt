@@ -1,0 +1,2 @@
+id_acceso=id_acceso_e4f5bc90,id_empleado=id_empleado_fb23feb9,permiso_altas=true,permiso_bajas=true,permiso_modificaciones=true,interfaz_accedida=Admin
+id_acceso=id_acceso_86cd7f0b,id_empleado=id_empleado_eec87903,permiso_altas=true,permiso_bajas=false,permiso_modificaciones=false,interfaz_accedida=Usuario

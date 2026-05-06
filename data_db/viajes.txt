@@ -1,2 +1,2 @@
-id_viaje=id_viaje_3a9173f8,id_lugar_origen=id_lugar_017b0834,id_lugar_destino=id_lugar_cb416f3e,fecha=2026-05-01,km_recorrer=220,tiempo_estimado_llegada=3h 20m,cupos_totales=40,cupos_disponibles=40,horario=08:00,costo_asiento=10
-id_viaje=id_viaje_9c6412e2,id_lugar_origen=id_lugar_cb416f3e,id_lugar_destino=id_lugar_017b0834,fecha=2026-05-02,km_recorrer=220,tiempo_estimado_llegada=3h 35m,cupos_totales=40,cupos_disponibles=35,horario=15:30,costo_asiento=30
+id_viaje=id_viaje_e1b6dfb7,id_ruta=id_ruta_e9ef356e,id_autobus=id_autobus_1f568a78,fecha_salida=2026-05-10,hora_salida=08:00,costo_base=150.00
+id_viaje=id_viaje_425ed47d,id_ruta=id_ruta_60cb991a,id_autobus=id_autobus_3266bd59,fecha_salida=2026-05-11,hora_salida=15:30,costo_base=280.00

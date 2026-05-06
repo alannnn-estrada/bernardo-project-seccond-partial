@@ -1,2 +1,0 @@
-id_lugar=id_lugar_017b0834,nombre_lugar=Terminal Norte,codigo_postal=64000
-id_lugar=id_lugar_cb416f3e,nombre_lugar=Terminal Sur,codigo_postal=64100

@@ -1,91 +1,78 @@
 import re
 import unicodedata
-from datetime import datetime
 
-from insert import (
-    get_display_value,
-    get_trip_available_seats,
-    get_trip_total_seats,
-    load_rows,
-)
+from insert import get_display_value, load_rows
 
 REFERENCE_TABLES = {
     "id_cliente": "clientes",
-    "id_terminal": "terminales",
-    "id_lugar_origen": "lugares",
-    "id_lugar_destino": "lugares",
+    "id_autobus": "autobuses",
+    "id_ruta": "rutas",
     "id_viaje": "viajes",
-    "id_usuario": "usuarios",
-    "id_rol": "roles",
+    "id_empleado": "empleados",
 }
 
 FORM_FIELDS = {
-    "roles": [
-        ("nombre_rol", "text"),
-        ("permisos", "text"),
-    ],
     "clientes": [
-        ("nombre", "text"),
-        ("apellido", "text"),
-        ("correo", "text"),
-        ("telefono", "text"),
+        ("nombre_completo", "text"),
+        ("telefono", "number"),
+        ("email", "text"),
     ],
-    "terminales": [
-        ("nombre_terminal", "text"),
-        ("direccion", "text"),
-        ("codigo_postal", "text"),
+    "autobuses": [
+        ("numero_unidad", "text"),
+        ("modelo", "text"),
+        ("capacidad_total", "number"),
+        ("placa", "text"),
     ],
-    "lugares": [
-        ("nombre_lugar", "text"),
-        ("codigo_postal", "text"),
+    "rutas": [
+        ("origen", "text"),
+        ("destino", "text"),
+        ("distancia_estimada", "number"),
     ],
     "viajes": [
-        ("id_lugar_origen", "select"),
-        ("id_lugar_destino", "select"),
-        ("fecha", "date"),
-        ("km_recorrer", "text"),
-        ("tiempo_estimado_llegada", "text"),
-        ("cupos_totales", "text"),
-        ("horario", "text"),
-        ("costo_asiento", "number"),
+        ("id_ruta", "select"),
+        ("id_autobus", "select"),
+        ("fecha_salida", "date"),
+        ("hora_salida", "text"),
+        ("costo_base", "number"),
     ],
-    "usuarios": [
-        ("username", "username_auto"),
-        ("password_hash", "password"),
-        ("id_rol", "select"),
-        ("id_terminal", "select"),
-        ("fecha_contratacion", "date"),
-        ("nombre", "text"),
-        ("apellido", "text"),
-        ("direccion", "text"),
-        ("correo", "text"),
-        ("numero", "text"),
-        ("curp", "text"),
-        ("rfc", "text"),
-        ("sueldo", "number"),
-    ],
-    "reservaciones": [
-        ("id_usuario", "select"),
-        ("id_terminal", "select"),
-        ("id_cliente", "select"),
+    "boletos": [
         ("id_viaje", "select"),
-        ("fecha_reservacion", "date"),
-        ("asientos", "number"),
-        ("estado", "state"),
+        ("id_cliente", "select"),
+        ("numero_asiento", "number"),
+        ("costo_final", "auto_number"),
+    ],
+    "empleados": [
+        ("nombre", "text"),
+        ("rol", "text"),
+        ("usuario", "username_auto"),
+        ("contrasena_encriptada", "password"),
+    ],
+    "accesos": [
+        ("id_empleado", "select"),
+        ("permiso_altas", "bool"),
+        ("permiso_bajas", "bool"),
+        ("permiso_modificaciones", "bool"),
+        ("interfaz_accedida", "interface"),
+    ],
+    "reportes": [
+        ("id_viaje", "select"),
+        ("descripcion_incidencia", "text"),
+        ("fecha_reporte", "date"),
     ],
 }
 
 TREE_HEADERS = {
-    "roles": ["Rol", "Permisos"],
-    "clientes": ["Nombre", "Apellido", "Correo", "Telefono"],
-    "terminales": ["Terminal", "Direccion", "CP"],
-    "lugares": ["Nombre", "CP"],
-    "viajes": ["Origen", "Destino", "Fecha", "Horario", "Km", "Cupos", "Disponibles", "Costo"],
-    "usuarios": ["Username", "Rol", "Nombre", "Terminal", "Correo", "Telefono", "Contratacion"],
-    "reservaciones": ["Cliente", "Viaje", "Trabajador", "Terminal", "Fecha", "Asientos", "Estado", "Total"],
+    "clientes": ["Nombre completo", "Telefono", "Email"],
+    "autobuses": ["Unidad", "Modelo", "Capacidad", "Placa"],
+    "rutas": ["Origen", "Destino", "Distancia"],
+    "viajes": ["Ruta", "Autobus", "Fecha", "Hora", "Costo base"],
+    "boletos": ["Viaje", "Cliente", "Asiento", "Costo final"],
+    "empleados": ["Nombre", "Rol", "Usuario"],
+    "accesos": ["Empleado", "Altas", "Bajas", "Modificaciones", "Interfaz"],
+    "reportes": ["Viaje", "Incidencia", "Fecha"],
 }
 
-STATE_OPTIONS = ["pendiente", "confirmada", "cancelada"]
+INTERFACE_OPTIONS = ["Usuario", "Admin"]
 
 
 def is_valid_number(value):
@@ -104,7 +91,7 @@ def normalize_text(value):
     return without_accents
 
 
-def build_username_base(nombre, apellido):
+def build_username_base(nombre, apellido=""):
     base_name = f"{nombre}.{apellido}".strip(".")
     base_name = normalize_text(base_name).lower()
     base_name = re.sub(r"[^a-z0-9._]", "", base_name)
@@ -112,36 +99,13 @@ def build_username_base(nombre, apellido):
     return base_name or "usuario"
 
 
-def is_trip_outdated(row):
-    fecha = row.get("fecha", "").strip()
-    horario = row.get("horario", "").strip()
-    if not fecha:
-        return False
-
-    if horario:
-        try:
-            trip_datetime = datetime.strptime(f"{fecha} {horario}", "%Y-%m-%d %H:%M")
-        except ValueError:
-            try:
-                trip_datetime = datetime.strptime(fecha, "%Y-%m-%d")
-            except ValueError:
-                return False
-    else:
-        try:
-            trip_datetime = datetime.strptime(fecha, "%Y-%m-%d")
-        except ValueError:
-            return False
-
-    return trip_datetime < datetime.now()
-
-
-def generate_unique_username(nombre, apellido, exclude_id=None):
+def generate_unique_username(nombre, apellido="", exclude_id=None):
     base_name = build_username_base(nombre, apellido)
-    users = load_rows("usuarios")
+    empleados = load_rows("empleados")
     existing = {
-        user.get("username", "").strip().lower()
-        for user in users
-        if user.get("id_usuario", "") != exclude_id
+        empleado.get("usuario", "").strip().lower()
+        for empleado in empleados
+        if empleado.get("id_empleado", "") != exclude_id
     }
     if base_name not in existing:
         return base_name
@@ -153,80 +117,64 @@ def generate_unique_username(nombre, apellido, exclude_id=None):
 
 
 def table_record_label(table_name, row):
-    if table_name == "roles":
-        return row.get("nombre_rol", "").strip()
     if table_name == "clientes":
-        return f"{row.get('nombre', '')} {row.get('apellido', '')} - {row.get('correo', '')}".strip()
-    if table_name == "terminales":
-        return f"{row.get('nombre_terminal', '')} - {row.get('codigo_postal', '')}".strip()
-    if table_name == "lugares":
-        return f"{row.get('nombre_lugar', '')} - {row.get('codigo_postal', '')}".strip()
+        return f"{row.get('nombre_completo', '')} - {row.get('telefono', '')}".strip(" -")
+    if table_name == "autobuses":
+        return f"{row.get('numero_unidad', '')} | {row.get('modelo', '')} | {row.get('placa', '')}".strip(" |")
+    if table_name == "rutas":
+        return f"{row.get('origen', '')} -> {row.get('destino', '')} | {row.get('distancia_estimada', '')} km".strip()
     if table_name == "viajes":
-        origen = get_display_value("lugares", row.get("id_lugar_origen", ""))
-        destino = get_display_value("lugares", row.get("id_lugar_destino", ""))
-        disponibles = get_trip_available_seats(row)
-        total = get_trip_total_seats(row)
-        if is_trip_outdated(row):
-            estado = "FUERA DE HORARIO"
-        else:
-            estado = "LLENO" if disponibles <= 0 else f"{disponibles}/{total} disponibles"
-        return f"{origen} -> {destino} | {row.get('fecha', '')} {row.get('horario', '')} | {estado}".strip()
-    if table_name == "usuarios":
-        terminal = get_display_value("terminales", row.get("id_terminal", ""))
-        nombre = f"{row.get('nombre', '')} {row.get('apellido', '')}".strip()
-        return f"{row.get('username', '')} - {nombre} ({terminal})".strip()
-    if table_name == "reservaciones":
-        cliente = get_display_value("clientes", row.get("id_cliente", ""))
-        viaje = get_display_value("viajes", row.get("id_viaje", ""))
-        return f"{cliente} | {viaje} | {row.get('estado', '')}".strip()
+        return f"{get_display_value('rutas', row.get('id_ruta', ''))} | {get_display_value('autobuses', row.get('id_autobus', ''))} | {row.get('fecha_salida', '')} {row.get('hora_salida', '')}".strip()
+    if table_name == "boletos":
+        return f"{get_display_value('clientes', row.get('id_cliente', ''))} | {get_display_value('viajes', row.get('id_viaje', ''))} | Asiento {row.get('numero_asiento', '')}".strip()
+    if table_name == "empleados":
+        return f"{row.get('nombre', '')} - {row.get('usuario', '')} ({row.get('rol', '')})".strip()
+    if table_name == "accesos":
+        return f"{get_display_value('empleados', row.get('id_empleado', ''))} | {row.get('interfaz_accedida', '')}".strip()
+    if table_name == "reportes":
+        return f"{get_display_value('viajes', row.get('id_viaje', ''))} | {row.get('descripcion_incidencia', '')}".strip()
     return ""
 
 
 def table_display_values(table_name, row):
-    if table_name == "roles":
-        return [row.get("nombre_rol", ""), row.get("permisos", "")]
     if table_name == "clientes":
-        return [row.get("nombre", ""), row.get("apellido", ""), row.get("correo", ""), row.get("telefono", "")]
-    if table_name == "terminales":
-        return [row.get("nombre_terminal", ""), row.get("direccion", ""), row.get("codigo_postal", "")]
-    if table_name == "lugares":
-        return [row.get("nombre_lugar", ""), row.get("codigo_postal", "")]
+        return [row.get("nombre_completo", ""), row.get("telefono", ""), row.get("email", "")]
+    if table_name == "autobuses":
+        return [row.get("numero_unidad", ""), row.get("modelo", ""), row.get("capacidad_total", ""), row.get("placa", "")]
+    if table_name == "rutas":
+        return [row.get("origen", ""), row.get("destino", ""), row.get("distancia_estimada", "")]
     if table_name == "viajes":
-        total = get_trip_total_seats(row)
-        available = get_trip_available_seats(row)
-        if is_trip_outdated(row):
-            availability_text = "FUERA DE HORARIO"
-        else:
-            availability_text = "LLENO" if available <= 0 else str(available)
         return [
-            get_display_value("lugares", row.get("id_lugar_origen", "")),
-            get_display_value("lugares", row.get("id_lugar_destino", "")),
-            row.get("fecha", ""),
-            row.get("horario", ""),
-            row.get("km_recorrer", ""),
-            str(total),
-            availability_text,
-            f"${row.get('costo_asiento', '0')}",
+            get_display_value("rutas", row.get("id_ruta", "")),
+            get_display_value("autobuses", row.get("id_autobus", "")),
+            row.get("fecha_salida", ""),
+            row.get("hora_salida", ""),
+            f"${row.get('costo_base', '0')}",
         ]
-    if table_name == "usuarios":
+    if table_name == "boletos":
         return [
-            row.get("username", ""),
-            get_display_value("roles", row.get("id_rol", "")),
-            f"{row.get('nombre', '')} {row.get('apellido', '')}".strip(),
-            get_display_value("terminales", row.get("id_terminal", "")),
-            row.get("correo", ""),
-            row.get("numero", ""),
-            row.get("fecha_contratacion", ""),
-        ]
-    if table_name == "reservaciones":
-        return [
-            get_display_value("clientes", row.get("id_cliente", "")),
             get_display_value("viajes", row.get("id_viaje", "")),
-            get_display_value("usuarios", row.get("id_usuario", "")),
-            get_display_value("terminales", row.get("id_terminal", "")),
-            row.get("fecha_reservacion", ""),
-            row.get("asientos", ""),
-            row.get("estado", ""),
-            f"${row.get('costo_total', '0')}",
+            get_display_value("clientes", row.get("id_cliente", "")),
+            row.get("numero_asiento", ""),
+            f"${row.get('costo_final', '0')}",
+        ]
+    if table_name == "empleados":
+        return [row.get("nombre", ""), row.get("rol", ""), row.get("usuario", "")]
+    if table_name == "accesos":
+        def yn(value):
+            return "Sí" if str(value).lower() == "true" else "No"
+
+        return [
+            get_display_value("empleados", row.get("id_empleado", "")),
+            yn(row.get("permiso_altas", "")),
+            yn(row.get("permiso_bajas", "")),
+            yn(row.get("permiso_modificaciones", "")),
+            row.get("interfaz_accedida", ""),
+        ]
+    if table_name == "reportes":
+        return [
+            get_display_value("viajes", row.get("id_viaje", "")),
+            row.get("descripcion_incidencia", ""),
+            row.get("fecha_reporte", ""),
         ]
     return []

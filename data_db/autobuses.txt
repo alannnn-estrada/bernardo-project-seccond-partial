@@ -1,0 +1,2 @@
+id_autobus=id_autobus_1f568a78,numero_unidad=A-01,modelo=Irizar i6,capacidad_total=40,placa=ABC-123
+id_autobus=id_autobus_3266bd59,numero_unidad=A-02,modelo=Volvo 9700,capacidad_total=45,placa=XYZ-456

@@ -13,6 +13,10 @@ QMainWindow, QDialog, QWidget {
     color: #f1f5f9;
 }
 
+QWidget[objectName="loginPage"] {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0f172a, stop:0.5 #111827, stop:1 #0b0f19);
+}
+
 QFrame {
     border: none;
     background: transparent;
