@@ -131,9 +131,17 @@ class LoginDialog(QWidget):
 
         admins = load_rows("administrador")
         admin = next((row for row in admins if row.get("id_empleado", "") == employee.get("id_empleado", "")), None)
-        
+
+        access = None
         if admin:
-            access = next((row for row in load_rows("accesos") if row.get("id_admin", "") == admin.get("id_admin", "")), None)
+            # Buscar acceso por id_admin (esquema actual) o por id_empleado (esquema legado)
+            for acc in load_rows("accesos"):
+                if acc.get("id_admin", "") and admin.get("id_admin", "") and acc.get("id_admin", "") == admin.get("id_admin", ""):
+                    access = acc
+                    break
+                if acc.get("id_empleado", "") and acc.get("id_empleado", "") == employee.get("id_empleado", ""):
+                    access = acc
+                    break
             if not access:
                 QMessageBox.critical(self, "Acceso denegado", "El administrador no tiene permisos asignados.")
                 return

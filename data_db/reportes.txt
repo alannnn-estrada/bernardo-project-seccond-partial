@@ -1,3 +1,1 @@
-id_reporte=id_reporte_5075277d,id_viaje=id_viaje_e1b6dfb7,descripcion_incidencia=Sin incidentes,fecha_reporte=2026-05-06
-id_reporte=id_reporte_74ae40d0,id_viaje=id_viaje_425ed47d,descripcion_incidencia=Choque,fecha_reporte=2026-05-06
-id_reporte=id_reporte_130ad37d,id_viaje=id_viaje_e1b6dfb7,descripcion_incidencia=Baño sucio,fecha_reporte=2026-05-06
+id_reporte=id_reporte_425df9f7,id_viaje=id_viaje_9c2c39af,descripcion_incidencia=Sin incidentes,fecha_reporte=2026-05-07,is_deleted=true,deleted_at=2026-05-07 23:59:28,deleted_by=id_empleado_fb23feb9

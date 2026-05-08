@@ -1,1 +1,1 @@
-id_boleto=id_boleto_9565e9c7,id_viaje=id_viaje_e1b6dfb7,id_cliente=id_cliente_b3d16e59,numero_asiento=1,costo_final=150.00
+id_boleto=id_boleto_df06eed9,id_viaje=id_viaje_9c2c39af,numero_asiento=1,costo_final=150.00,is_deleted=true,deleted_at=2026-05-07 23:59:36,deleted_by=id_empleado_fb23feb9

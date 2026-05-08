@@ -505,7 +505,7 @@ def serialize_row(row, fields):
     return buffer.getvalue()
 
 
-def load_rows(table_name):
+def load_rows(table_name, include_deleted=False):
     path = table_path(table_name)
     rows = []
     with open(path, "r", encoding="utf-8") as file:
@@ -514,13 +514,20 @@ def load_rows(table_name):
             if not line:
                 continue
             row = parse_line(line)
-            if row:
-                rows.append(row)
+            if not row:
+                continue
+            # Excluir registros marcados como borrados (soft delete) a menos que se soliciten
+            if not include_deleted and str(row.get("is_deleted", "")).lower() == "true":
+                continue
+            rows.append(row)
     return rows
 
 
 def save_rows(table_name, rows):
-    fields = TABLES[table_name]["fields"]
+    base_fields = TABLES[table_name]["fields"]
+    # Añadir campos de soft-delete al serializar (si no existen ya)
+    extra_fields = [f for f in ("is_deleted", "deleted_at", "deleted_by") if f not in base_fields]
+    fields = base_fields + extra_fields
     path = table_path(table_name)
     with open(path, "w", encoding="utf-8") as file:
         for row in rows:

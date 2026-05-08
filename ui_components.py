@@ -175,6 +175,64 @@ class ReportSummaryDialog(QDialog):
         layout.addWidget(close_btn)
 
 
+class DeletedRecordsDialog(QDialog):
+    def __init__(self, parent, table_name):
+        super().__init__(parent)
+        self.table_name = table_name
+        self.setWindowTitle(f"Registros borrados - {table_name}")
+        self.setMinimumSize(860, 460)
+        self.setup_ui()
+
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(12)
+
+        title = QLabel(f"REGISTROS BORRADOS: {self.table_name.upper()}")
+        title.setObjectName("dialogTitle")
+        title.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        layout.addWidget(title)
+
+        subtitle = QLabel("Se muestran los registros eliminados con su fecha y usuario asociado.")
+        subtitle.setWordWrap(True)
+        layout.addWidget(subtitle)
+
+        table = QTableWidget()
+        table.setObjectName("dialogTable")
+        table.setColumnCount(4)
+        table.setHorizontalHeaderLabels(["ID", "Registro", "Eliminado por", "Fecha eliminación"])
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.setAlternatingRowColors(True)
+        layout.addWidget(table)
+
+        deleted_rows = [row for row in load_rows(self.table_name, include_deleted=True) if str(row.get("is_deleted", "")).lower() == "true"]
+        table.setRowCount(len(deleted_rows))
+
+        for row_idx, row in enumerate(deleted_rows):
+            id_field = TABLES[self.table_name]["id_field"]
+            table.setItem(row_idx, 0, QTableWidgetItem(row.get(id_field, "")))
+            table.setItem(row_idx, 1, QTableWidgetItem(table_record_label(self.table_name, row)))
+            table.setItem(row_idx, 2, QTableWidgetItem(get_display_value("empleados", row.get("deleted_by", "")) if row.get("deleted_by", "") else ""))
+            table.setItem(row_idx, 3, QTableWidgetItem(row.get("deleted_at", "")))
+
+        if not deleted_rows:
+            table.setRowCount(1)
+            empty_item = QTableWidgetItem("No hay registros borrados")
+            empty_item.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            table.setItem(0, 0, empty_item)
+            table.setSpan(0, 0, 1, 4)
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        close_btn = QPushButton("Cerrar")
+        close_btn.setObjectName("primaryAction")
+        close_btn.clicked.connect(self.accept)
+        button_layout.addWidget(close_btn)
+        layout.addLayout(button_layout)
+
+
 class SearchSelectDialog(QDialog):
     def __init__(self, parent, table_name, title=None, initial_filter=""):
         super().__init__(parent)
@@ -610,6 +668,7 @@ class TablePanel(QWidget):
         self.table_name = table_name
         self.permissions = permissions or {}
         self.rows = []
+        self.show_deleted = False
         self.setup_ui()
 
     def setup_ui(self):
@@ -646,6 +705,12 @@ class TablePanel(QWidget):
             delete_btn.clicked.connect(self.on_delete)
             toolbar.addWidget(delete_btn)
 
+        deleted_btn = QPushButton("Ver borrados")
+        deleted_btn.setObjectName("secondaryAction")
+        deleted_btn.setIcon(self._icon("fa5s.history", QStyle.StandardPixmap.SP_FileDialogListView))
+        deleted_btn.clicked.connect(self.show_deleted_records)
+        toolbar.addWidget(deleted_btn)
+
         refresh_btn = QPushButton("Actualizar")
         refresh_btn.setObjectName("warningAction")
         refresh_btn.setIcon(self._icon("fa5s.sync-alt", QStyle.StandardPixmap.SP_BrowserReload))
@@ -679,6 +744,11 @@ class TablePanel(QWidget):
         self.search_input.setObjectName("searchInput")
         self.search_input.textChanged.connect(self.filter_table)
         search_layout.addWidget(self.search_input)
+
+        self.show_deleted_checkbox = QCheckBox("Mostrar borrados")
+        self.show_deleted_checkbox.setObjectName("subtitleText")
+        self.show_deleted_checkbox.stateChanged.connect(self.toggle_deleted_rows)
+        search_layout.addWidget(self.show_deleted_checkbox)
         surface_layout.addLayout(search_layout)
 
         self.table = QTableWidget()
@@ -718,9 +788,17 @@ class TablePanel(QWidget):
                     break
             self.table.setRowHidden(row, not match)
 
+    def toggle_deleted_rows(self, state):
+        self.show_deleted = state == Qt.CheckState.Checked.value
+        self.refresh_table()
+
+    def show_deleted_records(self):
+        dialog = DeletedRecordsDialog(self, self.table_name)
+        dialog.exec()
+
     def refresh_table(self):
         self.table.setSortingEnabled(False)
-        self.rows = load_rows(self.table_name)
+        self.rows = load_rows(self.table_name, include_deleted=self.show_deleted)
         self.table.setRowCount(0)
 
         if not self.rows:
@@ -737,6 +815,9 @@ class TablePanel(QWidget):
             self.table.insertRow(row_pos)
             for col_idx, value in enumerate(values):
                 item = QTableWidgetItem(str(value))
+                if str(row.get("is_deleted", "")).lower() == "true":
+                    item.setForeground(QBrush(QColor("#94a3b8")))
+                    item.setToolTip(f"Eliminado por: {row.get('deleted_by', '')} | Fecha: {row.get('deleted_at', '')}")
                 self.table.setItem(row_pos, col_idx, item)
 
         self.table.setSortingEnabled(True)
@@ -891,7 +972,14 @@ class TablePanel(QWidget):
             QMessageBox.warning(self, "Validación", "No se puede eliminar porque tiene registros relacionados.")
             return
 
-        rows = [existing for existing in load_rows(self.table_name) if existing.get(id_field, "") != target_id]
+        # Soft delete: marcar registro en lugar de eliminar físicamente
+        rows = load_rows(self.table_name, include_deleted=True)
+        for existing in rows:
+            if existing.get(id_field, "") == target_id:
+                existing["is_deleted"] = "true"
+                existing["deleted_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                existing["deleted_by"] = self.gui_app.current_employee.get("id_empleado", "") if self.gui_app.current_employee else ""
+                break
         save_rows(self.table_name, rows)
         self.refresh_table()
 
