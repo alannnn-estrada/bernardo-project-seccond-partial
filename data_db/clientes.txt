@@ -1,1 +1,0 @@
-id_cliente=id_cliente_b3d16e59,nombre_completo=Juan Perez,telefono=123456789,email=juan@example.com

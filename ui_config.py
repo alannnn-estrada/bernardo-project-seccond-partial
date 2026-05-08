@@ -4,19 +4,14 @@ import unicodedata
 from insert import get_display_value, load_rows
 
 REFERENCE_TABLES = {
-    "id_cliente": "clientes",
     "id_autobus": "autobuses",
     "id_ruta": "rutas",
     "id_viaje": "viajes",
     "id_empleado": "empleados",
+    "id_admin": "administrador",
 }
 
 FORM_FIELDS = {
-    "clientes": [
-        ("nombre_completo", "text"),
-        ("telefono", "number"),
-        ("email", "text"),
-    ],
     "autobuses": [
         ("numero_unidad", "text"),
         ("modelo", "text"),
@@ -34,21 +29,25 @@ FORM_FIELDS = {
         ("fecha_salida", "date"),
         ("hora_salida", "text"),
         ("costo_base", "number"),
+        ("nombre_cliente", "text"),
+        ("telefono_cliente", "text"),
+        ("correo_cliente", "text"),
     ],
     "boletos": [
         ("id_viaje", "select"),
-        ("id_cliente", "select"),
         ("numero_asiento", "number"),
         ("costo_final", "auto_number"),
     ],
     "empleados": [
         ("nombre", "text"),
-        ("rol", "text"),
         ("usuario", "username_auto"),
         ("contrasena_encriptada", "password"),
     ],
-    "accesos": [
+    "administrador": [
         ("id_empleado", "select"),
+    ],
+    "accesos": [
+        ("id_admin", "select"),
         ("permiso_altas", "bool"),
         ("permiso_bajas", "bool"),
         ("permiso_modificaciones", "bool"),
@@ -62,13 +61,13 @@ FORM_FIELDS = {
 }
 
 TREE_HEADERS = {
-    "clientes": ["Nombre completo", "Telefono", "Email"],
     "autobuses": ["Unidad", "Modelo", "Capacidad", "Placa"],
     "rutas": ["Origen", "Destino", "Distancia"],
-    "viajes": ["Ruta", "Autobus", "Fecha", "Hora", "Costo base"],
-    "boletos": ["Viaje", "Cliente", "Asiento", "Costo final"],
-    "empleados": ["Nombre", "Rol", "Usuario"],
-    "accesos": ["Empleado", "Altas", "Bajas", "Modificaciones", "Interfaz"],
+    "viajes": ["Ruta", "Autobus", "Fecha", "Hora", "Costo base", "Cliente", "Teléfono", "Email"],
+    "boletos": ["Viaje", "Asiento", "Costo final"],
+    "empleados": ["Nombre", "Usuario"],
+    "administrador": ["Empleado"],
+    "accesos": ["Admin", "Altas", "Bajas", "Modificaciones", "Interfaz"],
     "reportes": ["Viaje", "Incidencia", "Fecha"],
 }
 
@@ -117,8 +116,6 @@ def generate_unique_username(nombre, apellido="", exclude_id=None):
 
 
 def table_record_label(table_name, row):
-    if table_name == "clientes":
-        return f"{row.get('nombre_completo', '')} - {row.get('telefono', '')}".strip(" -")
     if table_name == "autobuses":
         return f"{row.get('numero_unidad', '')} | {row.get('modelo', '')} | {row.get('placa', '')}".strip(" |")
     if table_name == "rutas":
@@ -126,19 +123,19 @@ def table_record_label(table_name, row):
     if table_name == "viajes":
         return f"{get_display_value('rutas', row.get('id_ruta', ''))} | {get_display_value('autobuses', row.get('id_autobus', ''))} | {row.get('fecha_salida', '')} {row.get('hora_salida', '')}".strip()
     if table_name == "boletos":
-        return f"{get_display_value('clientes', row.get('id_cliente', ''))} | {get_display_value('viajes', row.get('id_viaje', ''))} | Asiento {row.get('numero_asiento', '')}".strip()
+        return f"{get_display_value('viajes', row.get('id_viaje', ''))} | Asiento {row.get('numero_asiento', '')}".strip()
     if table_name == "empleados":
-        return f"{row.get('nombre', '')} - {row.get('usuario', '')} ({row.get('rol', '')})".strip()
+        return f"{row.get('nombre', '')} - {row.get('usuario', '')}".strip()
+    if table_name == "administrador":
+        return f"Admin: {get_display_value('empleados', row.get('id_empleado', ''))}".strip()
     if table_name == "accesos":
-        return f"{get_display_value('empleados', row.get('id_empleado', ''))} | {row.get('interfaz_accedida', '')}".strip()
+        return f"{get_display_value('administrador', row.get('id_admin', ''))} | {row.get('interfaz_accedida', '')}".strip()
     if table_name == "reportes":
         return f"{get_display_value('viajes', row.get('id_viaje', ''))} | {row.get('descripcion_incidencia', '')}".strip()
     return ""
 
 
 def table_display_values(table_name, row):
-    if table_name == "clientes":
-        return [row.get("nombre_completo", ""), row.get("telefono", ""), row.get("email", "")]
     if table_name == "autobuses":
         return [row.get("numero_unidad", ""), row.get("modelo", ""), row.get("capacidad_total", ""), row.get("placa", "")]
     if table_name == "rutas":
@@ -150,22 +147,26 @@ def table_display_values(table_name, row):
             row.get("fecha_salida", ""),
             row.get("hora_salida", ""),
             f"${row.get('costo_base', '0')}",
+            row.get("nombre_cliente", ""),
+            row.get("telefono_cliente", ""),
+            row.get("correo_cliente", ""),
         ]
     if table_name == "boletos":
         return [
             get_display_value("viajes", row.get("id_viaje", "")),
-            get_display_value("clientes", row.get("id_cliente", "")),
             row.get("numero_asiento", ""),
             f"${row.get('costo_final', '0')}",
         ]
     if table_name == "empleados":
-        return [row.get("nombre", ""), row.get("rol", ""), row.get("usuario", "")]
+        return [row.get("nombre", ""), row.get("usuario", "")]
+    if table_name == "administrador":
+        return [get_display_value("empleados", row.get("id_empleado", ""))]
     if table_name == "accesos":
         def yn(value):
             return "Sí" if str(value).lower() == "true" else "No"
 
         return [
-            get_display_value("empleados", row.get("id_empleado", "")),
+            get_display_value("administrador", row.get("id_admin", "")),
             yn(row.get("permiso_altas", "")),
             yn(row.get("permiso_bajas", "")),
             yn(row.get("permiso_modificaciones", "")),

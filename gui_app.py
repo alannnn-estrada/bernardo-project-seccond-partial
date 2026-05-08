@@ -18,9 +18,9 @@ from insert import (
     load_rows,
     save_rows,
     seed_accesos_if_needed,
+    seed_administrador_if_needed,
     seed_autobuses_if_needed,
     seed_boletos_if_needed,
-    seed_clientes_if_needed,
     seed_empleados_if_needed,
     seed_reportes_if_needed,
     seed_rutas_if_needed,
@@ -29,15 +29,12 @@ from insert import (
 )
 from ui_components import TablePanel
 
-TABLE_NAMES = ["clientes", "autobuses", "rutas", "viajes", "boletos", "empleados", "accesos", "reportes"]
+TABLE_NAMES = ["autobuses", "rutas", "viajes", "boletos", "reportes"]
 TABLE_LABELS = {
-    "clientes": "Clientes",
     "autobuses": "Autobuses",
     "rutas": "Rutas",
     "viajes": "Viajes",
     "boletos": "Boletos",
-    "empleados": "Empleados",
-    "accesos": "Accesos",
     "reportes": "Reportes",
 }
 
@@ -132,12 +129,18 @@ class LoginDialog(QWidget):
             self.username_input.setFocus()
             return
 
-        access = next((row for row in load_rows("accesos") if row.get("id_empleado", "") == employee.get("id_empleado", "")), None)
-        if not access:
-            QMessageBox.critical(self, "Acceso denegado", "El empleado no tiene permisos asignados.")
-            return
-
-        self.parent_app.login_user(employee, access)
+        admins = load_rows("administrador")
+        admin = next((row for row in admins if row.get("id_empleado", "") == employee.get("id_empleado", "")), None)
+        
+        if admin:
+            access = next((row for row in load_rows("accesos") if row.get("id_admin", "") == admin.get("id_admin", "")), None)
+            if not access:
+                QMessageBox.critical(self, "Acceso denegado", "El administrador no tiene permisos asignados.")
+                return
+        else:
+            access = None
+            
+        self.parent_app.login_user(employee, access, admin)
 
 
 class AgencyGUI(QMainWindow):
@@ -150,6 +153,7 @@ class AgencyGUI(QMainWindow):
         ensure_data_files()
         self.current_employee = None
         self.current_access = None
+        self.current_admin = None
         self.interface_mode = "user"
         self.main_widget = None
         self.login_widget = None
@@ -181,10 +185,11 @@ class AgencyGUI(QMainWindow):
         self.setWindowState(Qt.WindowState.WindowNoState)
         self.resize(1000, 720)
 
-    def login_user(self, employee, access):
+    def login_user(self, employee, access, admin=None):
         self.current_employee = employee
         self.current_access = access
-        self.interface_mode = "admin" if access.get("interfaz_accedida", "").strip().lower() == "admin" else "user"
+        self.current_admin = admin
+        self.interface_mode = "admin" if admin else "user"
         if self.login_widget:
             self.login_widget.deleteLater()
             self.login_widget = None
@@ -303,23 +308,23 @@ class AgencyGUI(QMainWindow):
     def get_accessible_tables(self):
         if self.interface_mode == "admin":
             return TABLE_NAMES
-        return ["clientes", "rutas", "viajes", "boletos", "reportes"]
+        return ["rutas", "viajes", "boletos", "reportes"]
 
     def get_table_permissions(self, table_name):
         if self.interface_mode == "admin":
             return {"create": True, "edit": True, "delete": True}
 
         base = {"create": False, "edit": False, "delete": False}
-        if table_name == "clientes":
+        if table_name == "viajes":
             base["create"] = True
         if table_name == "boletos":
-            base["create"] = str(self.current_access.get("permiso_altas", "")).lower() == "true"
+            base["create"] = str(self.current_access.get("permiso_altas", "")).lower() == "true" if self.current_access else False
         return base
 
     def load_demo_data(self):
         seed_empleados_if_needed()
+        seed_administrador_if_needed()
         seed_accesos_if_needed()
-        seed_clientes_if_needed()
         seed_autobuses_if_needed()
         seed_rutas_if_needed()
         seed_viajes_if_needed()
@@ -332,6 +337,7 @@ class AgencyGUI(QMainWindow):
     def logout(self):
         self.current_employee = None
         self.current_access = None
+        self.current_admin = None
         self.interface_mode = "user"
         self.panels.clear()
         self.show_login()

@@ -6,80 +6,71 @@ config:
     theme: default
 ---
 erDiagram
-    ROLES ||--o{ USUARIOS : autoriza
-    CLIENTES ||--o{ RESERVACIONES : realiza
-    USUARIOS ||--o{ RESERVACIONES : registra
-    TERMINALES ||--o{ USUARIOS : asigna
-    TERMINALES ||--o{ RESERVACIONES : mediante
-    VIAJES ||--o{ RESERVACIONES : para
-    LUGARES ||--o{ VIAJES : origen
-    LUGARES ||--o{ VIAJES : destino
+    EMPLEADO ||--o| ADMINISTRADOR : puede_ser
+    ADMINISTRADOR ||--|| ACCESO : define
+    AUTOBUS ||--o{ VIAJE : participa_en
+    RUTA ||--o{ VIAJE : organiza
+    VIAJE ||--o{ BOLETO : genera
+    VIAJE ||--o{ REPORTE : registra
 
-    CLIENTES {
-        string id_cliente PK
+    EMPLEADO {
+        string id_empleado PK
         string nombre
-        string apellido
-        string correo
-        string telefono
+        string usuario
+        string contrasena_encriptada
     }
 
-    ROLES {
-        string id_rol PK
-        string nombre_rol
-        string permisos
+    ADMINISTRADOR {
+        string id_admin PK
+        string id_empleado FK
     }
 
-    USUARIOS {
-        string id_usuario PK
-        string username UK
-        string password_hash
-        string id_rol FK
-        string id_terminal FK
-        date fecha_contratacion
-        string nombre
-        string apellido
-        string direccion
-        string correo
-        string numero
-        string curp
-        string rfc
-        string sueldo
+    ACCESO {
+        string id_acceso PK
+        string id_admin FK
+        string permiso_altas
+        string permiso_bajas
+        string permiso_modificaciones
+        string interfaz_accedida
     }
 
-    TERMINALES {
-        string id_terminal PK
-        string nombre_terminal
-        string direccion
-        string codigo_postal
+    AUTOBUS {
+        string id_autobus PK
+        string numero_unidad
+        string modelo
+        int capacidad_total
+        string placa
     }
 
-    LUGARES {
-        string id_lugar PK
-        string nombre_lugar
-        string codigo_postal
+    RUTA {
+        string id_ruta PK
+        string origen
+        string destino
+        float distancia_estimada
     }
 
-    VIAJES {
+    VIAJE {
         string id_viaje PK
-        string id_lugar_origen FK
-        string id_lugar_destino FK
-        date fecha
-        int km_recorrer
-        string tiempo_estimado_llegada
-        int cupos_totales
-        int cupos_disponibles
-        string horario
-        float costo_asiento
+        string id_ruta FK
+        string id_autobus FK
+        date fecha_salida
+        string hora_salida
+        float costo_base
+        string nombre_cliente
+        string telefono_cliente
+        string correo_cliente
     }
 
-    RESERVACIONES {
-        string id_reservacion PK
-        string id_cliente FK
+    BOLETO {
+        string id_boleto PK
         string id_viaje FK
-        string id_usuario FK
-        string id_terminal FK
-        date fecha_reservacion
-        int asientos
-        string estado
-        float costo_total
+        string numero_asiento
+        float costo_final
+    }
+
+    REPORTE {
+        string id_reporte PK
+        string id_viaje FK
+        string descripcion_incidencia
+        date fecha_reporte
     }

@@ -177,15 +177,17 @@ Proyecto_Agencia_Viajes/
 ├── styles.qss              # Tema personalizado Qt
 ├── ER_DIAGRAM.md           # Documentación ER detallada
 ├── ER_DIAGRAM.mmd          # Diagrama Mermaid
+├── DOCUMENTACION_PROYECTO.md # Documentación del proyecto
 ├── README.md               # Este archivo
 └── data_db/
-    ├── clientes.txt
-    ├── usuarios.txt
-    ├── terminales.txt
-    ├── lugares.txt
+    ├── empleados.txt
+    ├── administrador.txt
+    ├── accesos.txt
+    ├── autobuses.txt
+    ├── rutas.txt
     ├── viajes.txt
-    ├── reservaciones.txt
-    └── roles.txt
+    ├── boletos.txt
+    └── reportes.txt
 ```
 
 ## Ejemplos de Uso

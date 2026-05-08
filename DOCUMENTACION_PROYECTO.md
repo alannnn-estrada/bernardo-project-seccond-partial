@@ -38,15 +38,16 @@ El menu principal cumple con las operaciones solicitadas para el proyecto:
 
 Los datos se guardan en la carpeta `data_db`. Cada tabla del sistema corresponde a un archivo `.txt`:
 
-| Tabla             | Archivo               | Funcion                                               |
-| ----------------- | --------------------- | ----------------------------------------------------- |
-| `roles`         | `roles.txt`         | Guarda los tipos de usuario y sus permisos.           |
-| `clientes`      | `clientes.txt`      | Guarda la informacion de los clientes.                |
-| `terminales`    | `terminales.txt`    | Guarda las terminales disponibles.                    |
-| `lugares`       | `lugares.txt`       | Guarda los lugares de origen y destino.               |
-| `viajes`        | `viajes.txt`        | Guarda rutas, fechas, horarios, cupos y costos.       |
-| `usuarios`      | `usuarios.txt`      | Guarda empleados o usuarios del sistema.              |
-| `reservaciones` | `reservaciones.txt` | Guarda las reservaciones realizadas por los clientes. |
+| Tabla             | Archivo               | Función                                                       |
+| ----------------- | --------------------- | ------------------------------------------------------------- |
+| `empleados`     | `empleados.txt`     | Guarda los empleados del sistema con credenciales.            |
+| `administrador` | `administrador.txt` | Guarda los administradores vinculados a empleados.            |
+| `accesos`       | `accesos.txt`       | Guarda los permisos asignados a cada administrador.           |
+| `autobuses`     | `autobuses.txt`     | Guarda la información de los autobuses disponibles.           |
+| `rutas`         | `rutas.txt`         | Guarda los lugares de origen y destino de las rutas.          |
+| `viajes`        | `viajes.txt`        | Guarda fechas, horarios, cupos y datos de clientes del viaje. |
+| `boletos`       | `boletos.txt`       | Guarda los boletos emitidos para cada viaje.                  |
+| `reportes`      | `reportes.txt`      | Guarda los reportes generados del sistema.                    |
 
 Cada registro se almacena en una linea con formato de pares `campo=valor`. Para evitar errores con valores que contienen comas, como los permisos de los roles, el sistema utiliza lectura y escritura basada en CSV. Esto permite conservar correctamente valores como:
 

@@ -82,8 +82,8 @@ class TicketDialog(QDialog):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card_layout.addWidget(title)
 
-        cliente = get_display_value("clientes", self.boleto.get("id_cliente", ""))
         viaje = get_row("viajes", self.boleto.get("id_viaje", ""))
+        cliente = viaje.get("nombre_cliente", "") if viaje else ""
         ruta = get_display_value("rutas", viaje.get("id_ruta", "")) if viaje else ""
         autobus = get_display_value("autobuses", viaje.get("id_autobus", "")) if viaje else ""
         salida = f"{viaje.get('fecha_salida', '')} {viaje.get('hora_salida', '')}".strip() if viaje else ""
@@ -384,36 +384,9 @@ class RecordDialog(QDialog):
         if field_type == "select":
             ref_table = REFERENCE_TABLES.get(field_name, "")
             
-            if field_name == "id_cliente" and self.table_name == "boletos":
-                container = QWidget()
-                container._internal_combo = None
-                layout = QHBoxLayout(container)
-                layout.setContentsMargins(0, 0, 0, 0)
-                layout.setSpacing(8)
-                
-                combo = QComboBox()
-                combo.addItem("-- Seleccionar --", None)
-                container._internal_combo = combo
-                if ref_table:
-                    id_field = TABLES[ref_table]["id_field"]
-                    ref_rows = load_rows(ref_table)
-                    for ref_row in ref_rows:
-                        combo.addItem(table_record_label(ref_table, ref_row), ref_row)
-                    if current_value:
-                        for index, ref_row in enumerate(ref_rows, start=1):
-                            if ref_row.get(id_field, "") == current_value:
-                                combo.setCurrentIndex(index)
-                                break
-                layout.addWidget(combo)
-                
-                create_btn = QPushButton("+")
-                create_btn.setMaximumWidth(40)
-                create_btn.setToolTip("Crear nuevo cliente")
-                create_btn.setObjectName("successAction")
-                create_btn.clicked.connect(lambda: self._quick_create_cliente(combo))
-                layout.addWidget(create_btn)
-                
-                return container
+            # Sección eliminada: id_cliente ya no existe en boletos (datos del cliente ahora en viajes)
+            # if field_name == "id_cliente" and self.table_name == "boletos":
+            #     (Código anterior referencia tabla clientes eliminada)
             
             widget = QComboBox()
             widget.addItem("-- Seleccionar --", None)
@@ -541,75 +514,10 @@ class RecordDialog(QDialog):
             pass
 
 
-
-    def _quick_create_cliente(self, combo):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Crear Cliente Rápido")
-        dialog.resize(400, 250)
-        layout = QVBoxLayout(dialog)
-
-        nombre_label = QLabel("Nombre Completo")
-        nombre_input = QLineEdit()
-        nombre_input.setPlaceholderText("Ej: Juan Pérez")
-        layout.addWidget(nombre_label)
-        layout.addWidget(nombre_input)
-
-        telefono_label = QLabel("Teléfono")
-        telefono_input = QLineEdit()
-        telefono_input.setPlaceholderText("Ej: 555-1234")
-        layout.addWidget(telefono_label)
-        layout.addWidget(telefono_input)
-
-        email_label = QLabel("Email")
-        email_input = QLineEdit()
-        email_input.setPlaceholderText("Ej: juan@ejemplo.com")
-        layout.addWidget(email_label)
-        layout.addWidget(email_input)
-
-        layout.addStretch()
-
-        button_layout = QHBoxLayout()
-        cancel_btn = QPushButton("Cancelar")
-        cancel_btn.setObjectName("secondaryAction")
-        cancel_btn.clicked.connect(dialog.reject)
-        button_layout.addWidget(cancel_btn)
-
-        save_btn = QPushButton("Crear")
-        save_btn.setObjectName("successAction")
-        button_layout.addWidget(save_btn)
-        layout.addLayout(button_layout)
-
-        def on_save():
-            nombre = nombre_input.text().strip()
-            telefono = telefono_input.text().strip()
-            email = email_input.text().strip()
-
-            if not nombre:
-                QMessageBox.warning(dialog, "Validación", "El nombre es requerido.")
-                return
-
-            new_client = {
-                "id_cliente": generate_id("id_cliente"),
-                "nombre_completo": nombre,
-                "telefono": telefono,
-                "email": email,
-            }
-
-            clientes = load_rows("clientes")
-            clientes.append(new_client)
-            save_rows("clientes", clientes)
-
-            combo.clear()
-            combo.addItem("-- Seleccionar --", None)
-            for cliente in clientes:
-                combo.addItem(table_record_label("clientes", cliente), cliente)
-
-            combo.setCurrentIndex(combo.count() - 1)
-            dialog.accept()
-
-        save_btn.clicked.connect(on_save)
-        dialog.exec()
-
+    # FUNCIÓN DESHABILITADA: _quick_create_cliente ya no se usa (tabla clientes eliminada)
+    # Los clientes ahora se manejan como datos dentro de los viajes
+    # def _quick_create_cliente(self, combo):
+    #     ... (código completo comentado para referencia futura)
 
     def _icon(self, icon_name, fallback):
         if qta is not None:
@@ -840,8 +748,6 @@ class TablePanel(QWidget):
             return any(viaje.get("id_ruta", "") == record_id for viaje in load_rows("viajes"))
         if table_name == "autobuses":
             return any(viaje.get("id_autobus", "") == record_id for viaje in load_rows("viajes"))
-        if table_name == "clientes":
-            return any(boleto.get("id_cliente", "") == record_id for boleto in load_rows("boletos"))
         if table_name == "viajes":
             return any(boleto.get("id_viaje", "") == record_id for boleto in load_rows("boletos")) or any(reporte.get("id_viaje", "") == record_id for reporte in load_rows("reportes"))
         if table_name == "empleados":
@@ -875,9 +781,6 @@ class TablePanel(QWidget):
             trip = get_row("viajes", record.get("id_viaje", ""))
             if not trip:
                 QMessageBox.warning(self, "Validación", "No existe el viaje seleccionado.")
-                return
-            if not get_row("clientes", record.get("id_cliente", "")):
-                QMessageBox.warning(self, "Validación", "No existe el cliente seleccionado.")
                 return
             if int(float(get_trip_available_seats(trip))) <= 0:
                 QMessageBox.warning(self, "Validación", "El viaje no tiene asientos disponibles.")
@@ -928,9 +831,6 @@ class TablePanel(QWidget):
             trip = get_row("viajes", updated.get("id_viaje", ""))
             if not trip:
                 QMessageBox.warning(self, "Validación", "No existe el viaje seleccionado.")
-                return
-            if not get_row("clientes", updated.get("id_cliente", "")):
-                QMessageBox.warning(self, "Validación", "No existe el cliente seleccionado.")
                 return
             if any(
                 boleto.get("id_boleto", "") != record[id_field]

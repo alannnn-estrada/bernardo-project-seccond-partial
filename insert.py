@@ -9,11 +9,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data_db")
 
 TABLES = {
-    "clientes": {
-        "file": "clientes.txt",
-        "id_field": "id_cliente",
-        "fields": ["id_cliente", "nombre_completo", "telefono", "email"],
-    },
     "autobuses": {
         "file": "autobuses.txt",
         "id_field": "id_autobus",
@@ -27,24 +22,29 @@ TABLES = {
     "viajes": {
         "file": "viajes.txt",
         "id_field": "id_viaje",
-        "fields": ["id_viaje", "id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base"],
+        "fields": ["id_viaje", "id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base", "nombre_cliente", "telefono_cliente", "correo_cliente"],
     },
     "boletos": {
         "file": "boletos.txt",
         "id_field": "id_boleto",
-        "fields": ["id_boleto", "id_viaje", "id_cliente", "numero_asiento", "costo_final"],
+        "fields": ["id_boleto", "id_viaje", "numero_asiento", "costo_final"],
     },
     "empleados": {
         "file": "empleados.txt",
         "id_field": "id_empleado",
-        "fields": ["id_empleado", "nombre", "rol", "usuario", "contrasena_encriptada"],
+        "fields": ["id_empleado", "nombre", "usuario", "contrasena_encriptada"],
+    },
+    "administrador": {
+        "file": "administrador.txt",
+        "id_field": "id_admin",
+        "fields": ["id_admin", "id_empleado"],
     },
     "accesos": {
         "file": "accesos.txt",
         "id_field": "id_acceso",
         "fields": [
             "id_acceso",
-            "id_empleado",
+            "id_admin",
             "permiso_altas",
             "permiso_bajas",
             "permiso_modificaciones",
@@ -59,17 +59,17 @@ TABLES = {
 }
 
 FIELD_LABELS = {
-    "id_cliente": "ID cliente",
     "id_autobus": "ID autobús",
     "id_ruta": "ID ruta",
     "id_viaje": "ID viaje",
     "id_boleto": "ID boleto",
     "id_empleado": "ID empleado",
+    "id_admin": "ID administrador",
     "id_acceso": "ID acceso",
     "id_reporte": "ID reporte",
-    "nombre_completo": "Nombre completo",
-    "telefono": "Telefono",
-    "email": "Correo",
+    "nombre_cliente": "Nombre del cliente",
+    "telefono_cliente": "Teléfono del cliente",
+    "correo_cliente": "Correo del cliente",
     "telefono": "Telefono",
     "numero_unidad": "Número de unidad",
     "modelo": "Modelo",
@@ -102,22 +102,22 @@ REFERENCE_MAP = {
         ("id_autobus", "autobuses", "id_autobus"),
     ],
     "boletos": [
-        ("id_cliente", "clientes", "id_cliente"),
         ("id_viaje", "viajes", "id_viaje"),
     ],
-    "accesos": [("id_empleado", "empleados", "id_empleado")],
+    "administrador": [("id_empleado", "empleados", "id_empleado")],
+    "accesos": [("id_admin", "administrador", "id_admin")],
     "reportes": [("id_viaje", "viajes", "id_viaje")],
 }
 
 
 DISPLAY_FIELDS = {
-    "clientes": ["nombre_completo", "telefono", "email"],
     "autobuses": ["numero_unidad", "modelo", "capacidad_total", "placa"],
     "rutas": ["origen", "destino", "distancia_estimada"],
-    "viajes": ["id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base"],
-    "boletos": ["id_viaje", "id_cliente", "numero_asiento", "costo_final"],
-    "empleados": ["nombre", "rol", "usuario"],
-    "accesos": ["id_empleado", "permiso_altas", "permiso_bajas", "permiso_modificaciones", "interfaz_accedida"],
+    "viajes": ["id_ruta", "id_autobus", "fecha_salida", "hora_salida", "costo_base", "nombre_cliente", "telefono_cliente", "correo_cliente"],
+    "boletos": ["id_viaje", "numero_asiento", "costo_final"],
+    "empleados": ["nombre", "usuario"],
+    "administrador": ["id_empleado"],
+    "accesos": ["id_admin", "permiso_altas", "permiso_bajas", "permiso_modificaciones", "interfaz_accedida"],
     "reportes": ["id_viaje", "descripcion_incidencia", "fecha_reporte"],
 }
 
@@ -131,8 +131,8 @@ def ensure_data_files():
                 pass
 
     seed_empleados_if_needed()
+    seed_administrador_if_needed()
     seed_accesos_if_needed()
-    seed_clientes_if_needed()
     seed_autobuses_if_needed()
     seed_rutas_if_needed()
     seed_viajes_if_needed()
@@ -160,8 +160,6 @@ def get_display_value(table_name, record_id):
     if not row:
         return record_id
 
-    if table_name == "clientes":
-        return row.get("nombre_completo", record_id)
     if table_name == "autobuses":
         return f"Unidad {row.get('numero_unidad', '')} - {row.get('modelo', '')}".strip(" -")
     if table_name == "rutas":
@@ -175,15 +173,18 @@ def get_display_value(table_name, record_id):
         total = get_trip_total_seats(row)
         return f"{ruta} | {autobus} | {fecha} {hora} | {disponibles}/{total} asientos".strip()
     if table_name == "boletos":
-        cliente = get_display_value("clientes", row.get("id_cliente", ""))
         viaje = get_display_value("viajes", row.get("id_viaje", ""))
         asiento = row.get("numero_asiento", "")
+        cliente = row.get("nombre_cliente", "")
         return f"{cliente} | {viaje} | Asiento {asiento}".strip()
     if table_name == "empleados":
         return f"{row.get('nombre', '')} ({row.get('usuario', '')})".strip()
-    if table_name == "accesos":
+    if table_name == "administrador":
         empleado = get_display_value("empleados", row.get("id_empleado", ""))
-        return f"{empleado} | {row.get('interfaz_accedida', '')}".strip()
+        return f"Admin: {empleado}".strip()
+    if table_name == "accesos":
+        admin = get_display_value("administrador", row.get("id_admin", ""))
+        return f"{admin} | {row.get('interfaz_accedida', '')}".strip()
     if table_name == "reportes":
         viaje = get_display_value("viajes", row.get("id_viaje", ""))
         return f"{viaje} | {row.get('descripcion_incidencia', '')}".strip()
@@ -240,50 +241,40 @@ def seed_accesos_if_needed():
     if accesos:
         return
 
-    empleados = load_rows("empleados")
-    if not empleados:
+    admins = load_rows("administrador")
+    if not admins:
         return
 
-    admin = next((row for row in empleados if row.get("usuario", "").strip().lower() == "admin"), empleados[0])
-    usuario = next((row for row in empleados if row.get("usuario", "").strip().lower() == "usuario"), None)
+    admin = admins[0]
     seed_rows = [
         {
             "id_acceso": generate_id("id_acceso"),
-            "id_empleado": admin["id_empleado"],
+            "id_admin": admin["id_admin"],
             "permiso_altas": "true",
             "permiso_bajas": "true",
             "permiso_modificaciones": "true",
             "interfaz_accedida": "Admin",
         }
     ]
-    if usuario:
-        seed_rows.append(
-            {
-                "id_acceso": generate_id("id_acceso"),
-                "id_empleado": usuario["id_empleado"],
-                "permiso_altas": "true",
-                "permiso_bajas": "false",
-                "permiso_modificaciones": "false",
-                "interfaz_accedida": "Usuario",
-            }
-        )
     save_rows("accesos", seed_rows)
 
 
-def seed_clientes_if_needed():
-    if load_rows("clientes"):
+def seed_administrador_if_needed():
+    if load_rows("administrador"):
         return
-    save_rows(
-        "clientes",
-        [
-            {
-                "id_cliente": generate_id("id_cliente"),
-                "nombre_completo": "Juan Perez",
-                "telefono": "8112345678",
-                "email": "juan@example.com",
-            }
-        ],
-    )
+
+    empleados = load_rows("empleados")
+    if not empleados:
+        return
+
+    admin = next((row for row in empleados if row.get("usuario", "").strip().lower() == "admin"), empleados[0])
+    seed_rows = [
+        {
+            "id_admin": generate_id("id_admin"),
+            "id_empleado": admin["id_empleado"],
+        }
+    ]
+    save_rows("administrador", seed_rows)
 
 
 def seed_autobuses_if_needed():
@@ -349,6 +340,9 @@ def seed_viajes_if_needed():
                 "fecha_salida": "2026-05-10",
                 "hora_salida": "08:00",
                 "costo_base": "150.00",
+                "nombre_cliente": "",
+                "telefono_cliente": "",
+                "correo_cliente": "",
             },
             {
                 "id_viaje": generate_id("id_viaje"),
@@ -357,6 +351,9 @@ def seed_viajes_if_needed():
                 "fecha_salida": "2026-05-11",
                 "hora_salida": "15:30",
                 "costo_base": "280.00",
+                "nombre_cliente": "",
+                "telefono_cliente": "",
+                "correo_cliente": "",
             },
         ],
     )
@@ -365,9 +362,8 @@ def seed_viajes_if_needed():
 def seed_boletos_if_needed():
     if load_rows("boletos"):
         return
-    clientes = load_rows("clientes")
     viajes = load_rows("viajes")
-    if not clientes or not viajes:
+    if not viajes:
         return
     save_rows(
         "boletos",
@@ -375,7 +371,6 @@ def seed_boletos_if_needed():
             {
                 "id_boleto": generate_id("id_boleto"),
                 "id_viaje": viajes[0]["id_viaje"],
-                "id_cliente": clientes[0]["id_cliente"],
                 "numero_asiento": "1",
                 "costo_final": viajes[0].get("costo_base", "0"),
             }
@@ -554,23 +549,23 @@ def verify_password(password, stored_password_hash):
 
 def choose_table():
     print("\nTablas disponibles:")
-    print("1. clientes")
-    print("2. autobuses")
-    print("3. rutas")
-    print("4. viajes")
-    print("5. boletos")
-    print("6. empleados")
+    print("1. autobuses")
+    print("2. rutas")
+    print("3. viajes")
+    print("4. boletos")
+    print("5. empleados")
+    print("6. administrador")
     print("7. accesos")
     print("8. reportes")
 
     option = input("Seleccione tabla: ").strip()
     mapping = {
-        "1": "clientes",
-        "2": "autobuses",
-        "3": "rutas",
-        "4": "viajes",
-        "5": "boletos",
-        "6": "empleados",
+        "1": "autobuses",
+        "2": "rutas",
+        "3": "viajes",
+        "4": "boletos",
+        "5": "empleados",
+        "6": "administrador",
         "7": "accesos",
         "8": "reportes",
     }
@@ -904,10 +899,12 @@ def main():
         elif option == "4":
             view_records()
         elif option == "5":
-            seed_clientes_if_needed()
+            seed_empleados_if_needed()
+            seed_administrador_if_needed()
+            seed_accesos_if_needed()
             seed_autobuses_if_needed()
             seed_rutas_if_needed()
-            seed_viajes()
+            seed_viajes_if_needed()
             seed_boletos_if_needed()
             seed_reportes_if_needed()
         elif option == "0":
