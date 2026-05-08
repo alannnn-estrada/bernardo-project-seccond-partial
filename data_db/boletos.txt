@@ -1,1 +1,2 @@
-id_boleto=id_boleto_df06eed9,id_viaje=id_viaje_9c2c39af,numero_asiento=1,costo_final=150.00,is_deleted=true,deleted_at=2026-05-07 23:59:36,deleted_by=id_empleado_fb23feb9
+id_boleto=id_boleto_373acb23,id_viaje=id_viaje_fc4f1b24,numero_asiento=1,costo_final=150.00,is_deleted=true,deleted_at=2026-05-08 09:52:24,deleted_by=id_empleado_fb23feb9
+id_boleto=id_boleto_e4bdc2d3,id_viaje=id_viaje_a87c8162,numero_asiento=1,costo_final=150,is_deleted=,deleted_at=,deleted_by=

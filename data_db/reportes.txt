@@ -1,1 +1,1 @@
-id_reporte=id_reporte_425df9f7,id_viaje=id_viaje_9c2c39af,descripcion_incidencia=Sin incidentes,fecha_reporte=2026-05-07,is_deleted=true,deleted_at=2026-05-07 23:59:28,deleted_by=id_empleado_fb23feb9
+id_reporte=id_reporte_7258f8cc,id_viaje=id_viaje_fc4f1b24,descripcion_incidencia=Sin incidentes,fecha_reporte=2026-05-08,is_deleted=,deleted_at=,deleted_by=

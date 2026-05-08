@@ -121,7 +121,7 @@ class LoginDialog(QWidget):
             QMessageBox.warning(self, "Campos vacíos", "Ingrese usuario y contraseña.")
             return
 
-        employees = load_rows("empleados")
+        employees = load_rows("empleados", include_deleted=False)
         employee = next((row for row in employees if row.get("usuario", "").strip().lower() == username), None)
         if not employee or not verify_password(password, employee.get("contrasena_encriptada", "")):
             QMessageBox.critical(self, "Acceso denegado", "Usuario o contraseña incorrectos.")
@@ -129,13 +129,13 @@ class LoginDialog(QWidget):
             self.username_input.setFocus()
             return
 
-        admins = load_rows("administrador")
+        admins = load_rows("administrador", include_deleted=False)
         admin = next((row for row in admins if row.get("id_empleado", "") == employee.get("id_empleado", "")), None)
 
         access = None
         if admin:
             # Buscar acceso por id_admin (esquema actual) o por id_empleado (esquema legado)
-            for acc in load_rows("accesos"):
+            for acc in load_rows("accesos", include_deleted=False):
                 if acc.get("id_admin", "") and admin.get("id_admin", "") and acc.get("id_admin", "") == admin.get("id_admin", ""):
                     access = acc
                     break
@@ -316,7 +316,7 @@ class AgencyGUI(QMainWindow):
     def get_accessible_tables(self):
         if self.interface_mode == "admin":
             return TABLE_NAMES
-        return ["rutas", "viajes", "boletos", "reportes"]
+        return ["rutas", "viajes", "boletos"]
 
     def get_table_permissions(self, table_name):
         if self.interface_mode == "admin":

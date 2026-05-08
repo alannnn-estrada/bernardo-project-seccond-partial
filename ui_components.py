@@ -295,7 +295,7 @@ class SearchSelectDialog(QDialog):
 
     def refresh_list(self):
         query = self.search_input.text().strip().lower()
-        rows = load_rows(self.table_name)
+        rows = load_rows(self.table_name, include_deleted=False)
         self.filtered_rows = []
         self.table.setRowCount(0)
 
@@ -454,7 +454,7 @@ class RecordDialog(QDialog):
             
             if ref_table:
                 id_field = TABLES[ref_table]["id_field"]
-                ref_rows = load_rows(ref_table)
+                ref_rows = load_rows(ref_table, include_deleted=False)
                 for ref_row in ref_rows:
                     widget.addItem(table_record_label(ref_table, ref_row), ref_row)
                 if current_value:
@@ -798,27 +798,52 @@ class TablePanel(QWidget):
 
     def refresh_table(self):
         self.table.setSortingEnabled(False)
-        self.rows = load_rows(self.table_name, include_deleted=self.show_deleted)
+        # Siempre cargar TODOS los registros (incluyendo borrados) para preservarlos en memoria
+        # pero solo mostrar los no-borrados a menos que esté activo el filtro
+        self.rows = load_rows(self.table_name, include_deleted=True)
+        rows_to_display = [row for row in self.rows if str(row.get("is_deleted", "")).lower() != "true"] if not self.show_deleted else self.rows
+        
+        # Recalcular número de columnas dinámicamente
+        base_headers = TREE_HEADERS.get(self.table_name, [])
+        headers = list(base_headers)
+        if self.show_deleted:
+            headers.extend(["Eliminado por", "Fecha eliminación"])
+        
+        self.table.setColumnCount(len(headers))
+        self.table.setHorizontalHeaderLabels(headers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setRowCount(0)
 
-        if not self.rows:
+        if not rows_to_display:
             self.table.setRowCount(1)
             message = QTableWidgetItem("No hay registros disponibles")
             message.setFlags(Qt.ItemFlag.ItemIsEnabled)
             self.table.setItem(0, 0, message)
-            self.table.setSpan(0, 0, 1, max(1, len(TREE_HEADERS.get(self.table_name, []))))
+            self.table.setSpan(0, 0, 1, max(1, len(headers)))
             return
 
-        for row in self.rows:
+        for row in rows_to_display:
             values = table_display_values(self.table_name, row)
             row_pos = self.table.rowCount()
             self.table.insertRow(row_pos)
+            
+            # Llenar columnas de valores normales
             for col_idx, value in enumerate(values):
                 item = QTableWidgetItem(str(value))
                 if str(row.get("is_deleted", "")).lower() == "true":
                     item.setForeground(QBrush(QColor("#94a3b8")))
-                    item.setToolTip(f"Eliminado por: {row.get('deleted_by', '')} | Fecha: {row.get('deleted_at', '')}")
                 self.table.setItem(row_pos, col_idx, item)
+            
+            # Agregar columnas de soft-delete si está activo el filtro
+            if self.show_deleted:
+                deleted_by_name = get_display_value("empleados", row.get("deleted_by", "")) if row.get("deleted_by", "") else "-"
+                deleted_at = row.get("deleted_at", "") or "-"
+                
+                deleted_by_item = QTableWidgetItem(deleted_by_name)
+                deleted_at_item = QTableWidgetItem(deleted_at)
+                
+                self.table.setItem(row_pos, len(values), deleted_by_item)
+                self.table.setItem(row_pos, len(values) + 1, deleted_at_item)
 
         self.table.setSortingEnabled(True)
         if hasattr(self, "search_input") and self.search_input.text():
@@ -826,13 +851,15 @@ class TablePanel(QWidget):
 
     def _is_referenced(self, table_name, record_id):
         if table_name == "rutas":
-            return any(viaje.get("id_ruta", "") == record_id for viaje in load_rows("viajes"))
+            return any(viaje.get("id_ruta", "") == record_id and str(viaje.get("is_deleted", "")).lower() != "true" for viaje in load_rows("viajes", include_deleted=True))
         if table_name == "autobuses":
-            return any(viaje.get("id_autobus", "") == record_id for viaje in load_rows("viajes"))
+            return any(viaje.get("id_autobus", "") == record_id and str(viaje.get("is_deleted", "")).lower() != "true" for viaje in load_rows("viajes", include_deleted=True))
         if table_name == "viajes":
-            return any(boleto.get("id_viaje", "") == record_id for boleto in load_rows("boletos")) or any(reporte.get("id_viaje", "") == record_id for reporte in load_rows("reportes"))
+            boletos_ref = any(boleto.get("id_viaje", "") == record_id and str(boleto.get("is_deleted", "")).lower() != "true" for boleto in load_rows("boletos", include_deleted=True))
+            reportes_ref = any(reporte.get("id_viaje", "") == record_id and str(reporte.get("is_deleted", "")).lower() != "true" for reporte in load_rows("reportes", include_deleted=True))
+            return boletos_ref or reportes_ref
         if table_name == "empleados":
-            return any(acceso.get("id_empleado", "") == record_id for acceso in load_rows("accesos"))
+            return any(acceso.get("id_empleado", "") == record_id and str(acceso.get("is_deleted", "")).lower() != "true" for acceso in load_rows("accesos", include_deleted=True))
         return False
 
     def on_new(self):
@@ -947,8 +974,24 @@ class TablePanel(QWidget):
             return None
 
         row_idx = selected_rows[0].row()
-        if 0 <= row_idx < len(self.rows):
-            return self.rows[row_idx]
+        # La tabla visual muestra una subselección de self.rows
+        # Obtener el ID de la primera columna visible y buscar en self.rows
+        id_item = self.table.item(row_idx, 0)
+        if not id_item:
+            return None
+        
+        id_field = TABLES[self.table_name]["id_field"]
+        # El ID está en la primera columna de valores display, buscar en self.rows
+        for row in self.rows:
+            row_values = table_display_values(self.table_name, row)
+            if row_values and row_values[0] == id_item.text():
+                # Verificar ID exacto por si hay ambigüedad
+                if row.get(id_field):
+                    return row
+            # Fallback: buscar por ID exacto
+            if row.get(id_field, "") == id_item.text():
+                return row
+        
         return None
 
     def on_delete(self):

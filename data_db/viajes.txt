@@ -1,2 +1,3 @@
-id_viaje=id_viaje_9c2c39af,id_ruta=id_ruta_e9ef356e,id_autobus=id_autobus_1f568a78,fecha_salida=2026-05-10,hora_salida=08:00,costo_base=150.00,nombre_cliente=,telefono_cliente=,correo_cliente=,is_deleted=,deleted_at=,deleted_by=
-id_viaje=id_viaje_5c2125c4,id_ruta=id_ruta_60cb991a,id_autobus=id_autobus_3266bd59,fecha_salida=2026-05-11,hora_salida=15:30,costo_base=280.00,nombre_cliente=,telefono_cliente=,correo_cliente=,is_deleted=,deleted_at=,deleted_by=
+id_viaje=id_viaje_fc4f1b24,id_ruta=id_ruta_e9ef356e,id_autobus=id_autobus_1f568a78,fecha_salida=2026-05-10,hora_salida=08:00,costo_base=150.00,nombre_cliente=,telefono_cliente=,correo_cliente=,is_deleted=,deleted_at=,deleted_by=
+id_viaje=id_viaje_ed5652b3,id_ruta=id_ruta_60cb991a,id_autobus=id_autobus_3266bd59,fecha_salida=2026-05-11,hora_salida=15:30,costo_base=280.00,nombre_cliente=,telefono_cliente=,correo_cliente=,is_deleted=,deleted_at=,deleted_by=
+id_viaje=id_viaje_a87c8162,id_ruta=id_ruta_e9ef356e,id_autobus=id_autobus_1f568a78,fecha_salida=2026-05-08,hora_salida=10:00,costo_base=150,nombre_cliente=Juaquin,telefono_cliente=Lopez,correo_cliente=jplp@gmail.com,is_deleted=,deleted_at=,deleted_by=

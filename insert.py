@@ -146,7 +146,7 @@ def table_path(table_name):
 
 def get_row(table_name, record_id):
     id_field = TABLES[table_name]["id_field"]
-    for row in load_rows(table_name):
+    for row in load_rows(table_name, include_deleted=False):
         if row.get(id_field) == record_id:
             return row
     return None
